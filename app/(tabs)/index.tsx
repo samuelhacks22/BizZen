@@ -5,6 +5,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import Animated, { useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import { GlassCard } from '../../components/GlassCard';
 import { Ionicons } from '@expo/vector-icons';
+import { ParticleBackground } from '../../components/ParticleBackground';
 
 export default function Dashboard() {
   const db = useSQLiteContext();
@@ -60,6 +61,7 @@ export default function Dashboard() {
         colors={['#0f172a', '#1e1b4b']}
         className="absolute w-full h-full"
       />
+      <ParticleBackground />
       
       <ScrollView 
         contentContainerStyle={{ paddingBottom: 100 }}

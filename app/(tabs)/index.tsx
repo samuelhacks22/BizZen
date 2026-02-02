@@ -68,22 +68,22 @@ export default function Dashboard() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#22d3ee" />}
       >
         <View className="pt-12 px-6 pb-6">
-          <Text className="text-gray-400 text-lg">Welcome back, Tycoon</Text>
-          <Text className="text-white text-3xl font-bold">Empire Overview</Text>
+          <Text className="text-gray-400 text-lg">Bienvenido, Magnate</Text>
+          <Text className="text-white text-3xl font-bold">Resumen del Imperio</Text>
         </View>
 
         {/* Level Card */}
         <View className="px-4 mb-6">
           <GlassCard className="border-cyan-500/30">
             <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-cyan-400 font-bold text-lg">Level {currentLevel}</Text>
+              <Text className="text-cyan-400 font-bold text-lg">Nivel {currentLevel}</Text>
               <Text className="text-gray-300 text-sm">{stats.xp} / {nextLevelXp} XP</Text>
             </View>
             <View className="h-4 bg-slate-700 rounded-full overflow-hidden">
               <Animated.View className="h-full bg-cyan-400 shadow-lg shadow-cyan-500/50" style={ProgressStyle} />
             </View>
             <Text className="text-gray-400 text-xs mt-2 text-center">
-              Make more sales to reach Level {currentLevel + 1}!
+              ¡Haz más ventas para alcanzar el Nivel {currentLevel + 1}!
             </Text>
           </GlassCard>
         </View>
@@ -93,14 +93,14 @@ export default function Dashboard() {
           <View className="w-1/2 p-2">
             <GlassCard>
               <Ionicons name="cash-outline" size={32} color="#4ade80" />
-              <Text className="text-gray-400 mt-2">Total Revenue</Text>
+              <Text className="text-gray-400 mt-2">Ingresos Totales</Text>
               <Text className="text-white text-2xl font-bold">${stats.sales.toFixed(2)}</Text>
             </GlassCard>
           </View>
           <View className="w-1/2 p-2">
             <GlassCard>
               <Ionicons name="cube-outline" size={32} color="#f472b6" />
-              <Text className="text-gray-400 mt-2">Active Products</Text>
+              <Text className="text-gray-400 mt-2">Productos Activos</Text>
               <Text className="text-white text-2xl font-bold">{stats.products}</Text>
             </GlassCard>
           </View>
@@ -108,7 +108,7 @@ export default function Dashboard() {
 
         {/* Quests / Daily Goals */}
         <View className="px-4 mt-4">
-          <Text className="text-white text-xl font-bold mb-4">Daily Quests</Text>
+          <Text className="text-white text-xl font-bold mb-4">Misiones Diarias</Text>
           
           <GlassCard className="mb-3 flex-row items-center justify-between">
             <View className="flex-row items-center flex-1">
@@ -116,8 +116,8 @@ export default function Dashboard() {
                 {stats.sales > 100 && <Ionicons name="checkmark" size={16} color="white" />}
               </View>
               <View>
-                <Text className="text-white font-semibold">First High Value</Text>
-                <Text className="text-gray-400 text-xs">Reach $100 in revenue</Text>
+                <Text className="text-white font-semibold">Primera Gran Venta</Text>
+                <Text className="text-gray-400 text-xs">Logra $100 en ingresos</Text>
               </View>
             </View>
             <View>
@@ -131,8 +131,8 @@ export default function Dashboard() {
                 {stats.products >= 5 && <Ionicons name="checkmark" size={16} color="white" />}
               </View>
               <View>
-                 <Text className="text-white font-semibold">Stockpile</Text>
-                 <Text className="text-gray-400 text-xs">Have 5+ products in stock</Text>
+                 <Text className="text-white font-semibold">Almacenamiento</Text>
+                 <Text className="text-gray-400 text-xs">Ten más de 5 productos</Text>
               </View>
             </View>
             <View>

@@ -12,12 +12,12 @@ export default function Home() {
       />
       
       <View className="p-8 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 items-center">
-        <Text className="text-4xl font-bold text-white mb-2">BizZen</Text>
-        <Text className="text-cyan-300 text-lg mb-6">Business Control & Zen</Text>
+        <Text className="text-4xl font-bold text-white mb-2">Managex</Text>
+        <Text className="text-cyan-300 text-lg mb-6">Control de Negocio y Zen</Text>
         
-        <Link href="/dashboard" asChild>
+        <Link href="/(tabs)" asChild>
           <TouchableOpacity className="bg-cyan-500 px-6 py-3 rounded-full shadow-lg shadow-cyan-500/50">
-            <Text className="text-white font-bold text-lg">Enter Dashboard</Text>
+            <Text className="text-white font-bold text-lg">Entrar al Panel</Text>
           </TouchableOpacity>
         </Link>
       </View>

@@ -21,7 +21,7 @@ export default function RootLayout() {
   }, [loaded]);
 
   return (
-    <SQLiteProvider databaseName="bizzen.db" onInit={migrateDbIfNeeded}>
+    <SQLiteProvider databaseName="managex.db" onInit={migrateDbIfNeeded}>
       <Stack screenOptions={{ headerShown: false }} />
       <StatusBar style="light" />
     </SQLiteProvider>

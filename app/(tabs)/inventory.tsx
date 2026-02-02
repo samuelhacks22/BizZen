@@ -42,9 +42,9 @@ export default function Inventory() {
             );
             loadProducts();
             setEditingProduct(null);
-            toastRef.current?.show("Product Updated!", "success");
+            toastRef.current?.show("¡Producto Actualizado!", "success");
         } catch (e) {
-             Alert.alert("Error", "Failed to update product");
+             Alert.alert("Error", "Error al actualizar producto");
         }
     } else {
         // Create
@@ -54,9 +54,9 @@ export default function Inventory() {
                 productData.name, productData.price, productData.stock, productData.category
             );
             loadProducts();
-            toastRef.current?.show("Product Added!", "success");
+            toastRef.current?.show("¡Producto Agregado!", "success");
         } catch (e) {
-            Alert.alert("Error", "Failed to add product");
+            Alert.alert("Error", "Error al agregar producto");
             console.error(e);
         }
     }
@@ -66,32 +66,32 @@ export default function Inventory() {
      try {
         await db.runAsync('DELETE FROM products WHERE id = ?', id);
         loadProducts();
-        toastRef.current?.show("Product Deleted", "error");
+        toastRef.current?.show("Producto Eliminado", "error");
      } catch (e) {
-        Alert.alert("Error", "Failed to delete product");
+        Alert.alert("Error", "Error al eliminar producto");
      }
   };
 
   const showOptions = (product: Product) => {
     Alert.alert(
         product.name,
-        "Choose an action",
+        "Elige una acción",
         [
-            { text: "Cancel", style: "cancel" },
+            { text: "Cancelar", style: "cancel" },
             { 
-                text: "Edit", 
+                text: "Editar", 
                 onPress: () => {
                     setEditingProduct(product);
                     setModalVisible(true);
                 } 
             },
             { 
-                text: "Delete", 
+                text: "Eliminar", 
                 style: "destructive", 
                 onPress: () => {
-                    Alert.alert("Confirm Delete", "Are you sure?", [
-                        { text: "Cancel", style: "cancel" },
-                        { text: "Delete", style: "destructive", onPress: () => deleteProduct(product.id) }
+                    Alert.alert("Confirmar Eliminación", "¿Estás seguro?", [
+                        { text: "Cancelar", style: "cancel" },
+                        { text: "Eliminar", style: "destructive", onPress: () => deleteProduct(product.id) }
                     ])
                 } 
             }
@@ -101,7 +101,7 @@ export default function Inventory() {
 
   const sellProduct = async (product: Product) => {
     if (product.stock <= 0) {
-        Alert.alert("Out of Stock", "Cannot sell this item.");
+        Alert.alert("Sin Stock", "No se puede vender este ítem.");
         return;
     }
 
@@ -110,14 +110,14 @@ export default function Inventory() {
             await db.runAsync('UPDATE products SET stock = stock - 1 WHERE id = ?', product.id);
             await db.runAsync(
                 'INSERT INTO transactions (type, amount, date, note) VALUES (?, ?, ?, ?)',
-                'SALE', product.price, new Date().toISOString(), `Sold ${product.name}`
+                'SALE', product.price, new Date().toISOString(), `Vendido ${product.name}`
             );
         });
         loadProducts();
-        toastRef.current?.show(`Sold 1 ${product.name}!`, "xp");
+        toastRef.current?.show(`¡Vendido 1 ${product.name}!`, "xp");
     } catch (e) {
         console.error("Sell transaction failed", e);
-        Alert.alert("Error", "Transaction failed");
+        Alert.alert("Error", "Transacción fallida");
     }
   };
 
@@ -158,7 +158,7 @@ export default function Inventory() {
         className="absolute w-full h-full"
       />
       <View className="pt-12 px-6 pb-4 flex-row justify-between items-center">
-        <Text className="text-white text-3xl font-bold">Inventory</Text>
+        <Text className="text-white text-3xl font-bold">Inventario</Text>
         <TouchableOpacity 
           className="bg-cyan-500 p-3 rounded-full shadow-lg shadow-cyan-500/50"
           onPress={() => {
@@ -176,7 +176,7 @@ export default function Inventory() {
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 120 }}
         ListEmptyComponent={
-            <Text className="text-gray-400 text-center mt-10">No products yet. Add some!</Text>
+            <Text className="text-gray-400 text-center mt-10">Aún no hay productos. ¡Agrega uno!</Text>
         }
       />
 

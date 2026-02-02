@@ -34,7 +34,7 @@ export function AddProductModal({ visible, onClose, onSave, initialProduct }: Ad
 
   const handleSave = () => {
     if (!name || !price || !stock) {
-      Alert.alert('Error', 'Please fill in all required fields');
+      Alert.alert('Error', 'Por favor completa todos los campos');
       return;
     }
 
@@ -58,9 +58,9 @@ export function AddProductModal({ visible, onClose, onSave, initialProduct }: Ad
       <View className="flex-1 justify-center items-center bg-black/50">
         <GlassCard className="w-11/12 max-w-md p-0" intensity={90}>
             <View className="p-4">
-                <Text className="text-white text-xl font-bold mb-4">{initialProduct ? 'Edit Product' : 'Add New Product'}</Text>
+                <Text className="text-white text-xl font-bold mb-4">{initialProduct ? 'Editar Producto' : 'Agregar Nuevo Producto'}</Text>
                 
-                <Text className="text-gray-300 mb-1">Product Name</Text>
+                <Text className="text-gray-300 mb-1">Nombre del Producto</Text>
                 <TextInput 
                     className="bg-white/10 text-white p-3 rounded-lg mb-3 border border-white/20"
                     placeholder="e.g. Wireless Mouse"
@@ -108,13 +108,13 @@ export function AddProductModal({ visible, onClose, onSave, initialProduct }: Ad
                         onPress={onClose}
                         className="py-3 px-6 rounded-lg bg-gray-600"
                     >
-                        <Text className="text-white font-bold">Cancel</Text>
+                        <Text className="text-white font-bold">Cancelar</Text>
                     </TouchableOpacity>
                     <TouchableOpacity 
                         onPress={handleSave}
                         className="py-3 px-6 rounded-lg bg-cyan-500 shadow-lg shadow-cyan-500/50"
                     >
-                        <Text className="text-white font-bold">Save Product</Text>
+                        <Text className="text-white font-bold">Guardar Producto</Text>
                     </TouchableOpacity>
                 </View>
             </View>

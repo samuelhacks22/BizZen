@@ -41,13 +41,13 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
       
       -- Seed some initial data for demo
       INSERT INTO products (name, price, stock, category) VALUES 
-      ('Digital License', 49.99, 100, 'Software'),
-      ('Premium Support', 29.99, 50, 'Service'),
-      ('Consultation', 99.99, 10, 'Service');
+      ('Licencia Digital', 49.99, 100, 'Software'),
+      ('Soporte Premium', 29.99, 50, 'Servicio'),
+      ('Consultoría', 99.99, 10, 'Servicio');
       
       INSERT INTO transactions (type, amount, date, note) VALUES
-      ('SALE', 49.99, datetime('now', '-1 day'), 'Initial Sale'),
-      ('SALE', 149.99, datetime('now'), 'Bulk License');
+      ('SALE', 49.99, datetime('now', '-1 day'), 'Venta Inicial'),
+      ('SALE', 149.99, datetime('now'), 'Licencia por Volumen');
     `);
     
     currentDbVersion = 1;

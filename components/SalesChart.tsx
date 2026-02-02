@@ -50,14 +50,14 @@ export function SalesChart({ data }: SalesChartProps) {
   if (data.length < 2) {
     return (
         <GlassCard className="mx-4 mb-4 items-center justify-center" style={{ height: 200 }}>
-            <Text className="text-gray-400">Not enough data for chart</Text>
+            <Text className="text-gray-400">No hay suficientes datos para el gráfico</Text>
         </GlassCard>
     )
   }
 
   return (
     <GlassCard className="mx-4 mb-4" intensity={20}>
-      <Text className="text-white font-bold text-lg mb-4 ml-2">Sales Trend</Text>
+      <Text className="text-white font-bold text-lg mb-4 ml-2">Tendencia de Ventas</Text>
       <View style={{ height: GRAPH_HEIGHT, width: GRAPH_WIDTH }}>
         <Canvas style={{ flex: 1 }}>
             {/* Gradient Fill */}

@@ -80,7 +80,7 @@ export default function Reports() {
         ListHeaderComponent={
           <>
             <View className="pt-12 px-6 pb-4 flex-row justify-between items-center">
-              <Text className="text-white text-3xl font-bold">Reports</Text>
+              <Text className="text-white text-3xl font-bold">Reportes</Text>
               <TouchableOpacity 
                 onPress={loadTransactions}
                 className="bg-slate-700/50 p-2 rounded-full"
@@ -89,7 +89,7 @@ export default function Reports() {
               </TouchableOpacity>
             </View>
             <SalesChart data={chartData} />
-            <Text className="text-white text-xl font-bold px-6 mb-4">History</Text>
+            <Text className="text-white text-xl font-bold px-6 mb-4">Historial</Text>
           </>
         }
         data={transactions}
@@ -97,7 +97,7 @@ export default function Reports() {
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 120 }}
         ListEmptyComponent={
-          <Text className="text-gray-400 text-center mt-10">No transactions found.</Text>
+          <Text className="text-gray-400 text-center mt-10">No se encontraron transacciones.</Text>
         }
       />
     </View>

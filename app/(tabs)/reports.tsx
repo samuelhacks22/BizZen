@@ -2,13 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Share, Alert } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { GlassCard } from '../../components/GlassCard';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { ScreenWrapper } from '../../components/ScreenWrapper';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 
 type CategoryStat = {
   category: string;
   totalValue: number;
   count: number;
+  avgValue?: number;
 };
 
 export default function Reports() {
@@ -53,84 +56,98 @@ export default function Reports() {
     loadStats();
   }, []);
 
-  const renderItem = ({ item }: { item: CategoryStat }) => {
+  const renderItem = ({ item, index }: { item: CategoryStat, index: number }) => {
     const percentage = totalValue > 0 ? (item.totalValue / totalValue) * 100 : 0;
-
+    
     return (
-      <GlassCard className="mb-3 mx-4 p-3" intensity={20}>
-        <View className="flex-row justify-between items-center mb-2">
-          <View className="flex-row items-center">
-            <View className="p-2 rounded-full mr-3 bg-cyan-500/20">
-              <Ionicons name="pricetag-outline" size={20} color="#22d3ee" />
+      <Animated.View entering={FadeInDown.delay(index * 100).springify()}>
+        <GlassCard className="mb-4 mx-4 p-4" intensity={25}>
+            <View className="flex-row justify-between items-center mb-3">
+              <View className="flex-row items-center">
+                <View className="w-10 h-10 rounded-full bg-neon-purple/20 items-center justify-center mr-3 border border-neon-purple/30">
+                  <Ionicons name="pie-chart-outline" size={20} color="#a855f7" />
+                </View>
+                <View>
+                  <Text className="text-white font-bold text-lg">{item.category}</Text>
+                  <Text className="text-gray-400 text-xs">{item.count} Activos</Text>
+                </View>
+              </View>
+              <View className="items-end">
+                  <Text className="font-black text-xl text-white">
+                    ${item.totalValue.toFixed(2)}
+                  </Text>
+                  <Text className="text-neon-cyan text-xs font-bold">{percentage.toFixed(1)}%</Text>
+              </View>
             </View>
-            <View>
-              <Text className="text-white font-semibold">{item.category}</Text>
-              <Text className="text-gray-400 text-xs">{item.count} Activos</Text>
+            
+            {/* Progress Bar Container */}
+            <View className="h-3 bg-black/40 rounded-full overflow-hidden w-full border border-white/5">
+                <LinearGradient
+                    colors={['#22d3ee', '#a855f7']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    className="h-full rounded-full shadow-lg shadow-neon-cyan/50"
+                    style={{ width: `${percentage}%` }}
+                />
             </View>
-          </View>
-          <Text className="font-bold text-lg text-white">
-            ${item.totalValue.toFixed(2)}
-          </Text>
-        </View>
-        
-        {/* Progress Bar */}
-        <View className="h-2 bg-slate-700 rounded-full overflow-hidden w-full">
-            <View 
-                className="h-full bg-cyan-400" 
-                style={{ width: `${percentage}%` }}
-            />
-        </View>
-        <Text className="text-right text-xs text-gray-400 mt-1">{percentage.toFixed(1)}% del valor total</Text>
-      </GlassCard>
+        </GlassCard>
+      </Animated.View>
     );
   };
 
   return (
-    <View className="flex-1 bg-slate-900">
-       <LinearGradient
-        colors={['#0f172a', '#1e1b4b']}
-        className="absolute w-full h-full"
-      />
-      
-      <FlatList
-        ListHeaderComponent={
-          <View className="pt-12 px-6 pb-4">
-              <View className="flex-row justify-between items-center mb-6">
-                <Text className="text-white text-3xl font-bold">Reportes</Text>
-                <View className="flex-row gap-2">
-                    <TouchableOpacity 
-                        onPress={handleExport}
-                        className="bg-cyan-500/80 p-2 rounded-full"
-                    >
-                        <Ionicons name="share-outline" size={20} color="white" />
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                        onPress={loadStats}
-                        className="bg-slate-700/50 p-2 rounded-full"
-                    >
-                        <Ionicons name="refresh" size={20} color="white" />
-                    </TouchableOpacity>
-                </View>
-              </View>
-
-              <GlassCard className="mb-6 border-green-500/30">
-                  <Text className="text-gray-400 text-sm">Valor Total del Inventario</Text>
-                  <Text className="text-white text-4xl font-bold mt-1">
-                      ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                  </Text>
-              </GlassCard>
-
-              <Text className="text-white text-xl font-bold mb-4">Valor por Categoría</Text>
+    <ScreenWrapper>
+       <Animated.View 
+            entering={FadeInDown.delay(200).springify()}
+            className="pt-6 px-4 pb-4"
+        >
+          <View className="flex-row justify-between items-center mb-6">
+             <View>
+                <Text className="text-neon-cyan font-bold tracking-widest text-xs uppercase mb-1">ANÁLISIS</Text>
+                <Text className="text-white text-3xl font-black">Reportes</Text>
+            </View>
+            <View className="flex-row gap-3">
+                <TouchableOpacity 
+                    onPress={handleExport}
+                    className="bg-neon-purple/20 border border-neon-purple/50 p-3 rounded-full"
+                >
+                    <Ionicons name="share-social-outline" size={20} color="#d8b4fe" />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                    onPress={loadStats}
+                    className="bg-white/10 p-3 rounded-full border border-white/20"
+                >
+                    <Ionicons name="refresh" size={20} color="white" />
+                </TouchableOpacity>
+            </View>
           </View>
-        }
+
+          <GlassCard className="mb-6 border-neon-green/30" intensity={40}>
+              <View className="flex-row items-center space-x-2 mb-2">
+                 <Ionicons name="trending-up" size={20} color="#4ade80" />
+                 <Text className="text-gray-400 font-medium">Valor Total del Inventario</Text>
+              </View>
+              
+              <Text className="text-white text-5xl font-black tracking-tighter shadow-green-500/50">
+                  ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </Text>
+          </GlassCard>
+
+          <Text className="text-white/80 font-bold text-lg mb-4 ml-1">Desglose por Categoría</Text>
+      </Animated.View>
+
+      <FlatList
         data={categoryStats}
         keyExtractor={item => item.category}
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          <Text className="text-gray-400 text-center mt-10">No hay datos suficientes.</Text>
+          <View className="items-center justify-center mt-10">
+              <Text className="text-gray-500">No hay datos suficientes para mostrar.</Text>
+          </View>
         }
       />
-    </View>
+    </ScreenWrapper>
   );
 }

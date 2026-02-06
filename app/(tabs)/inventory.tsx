@@ -1,12 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
-import { LinearGradient } from 'expo-linear-gradient';
 import { GlassCard } from '../../components/GlassCard';
 import { Ionicons } from '@expo/vector-icons';
 import { AddAssetModal } from '../../components/AddAssetModal';
 import { ToastNotification, ToastRef } from '../../components/ToastNotification';
 import { useRouter } from 'expo-router';
+import { ScreenWrapper } from '../../components/ScreenWrapper';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 type Asset = {
   id: number;
@@ -124,65 +126,93 @@ export default function Inventory() {
 
   const getStatusColor = (status: string) => {
       switch(status) {
-          case 'Active': return 'text-green-400';
-          case 'In Repair': return 'text-yellow-400';
-          case 'Disposed': return 'text-red-400';
-          default: return 'text-gray-400';
+          case 'Active': return 'bg-green-500';
+          case 'In Repair': return 'bg-yellow-500';
+          case 'Disposed': return 'bg-red-500';
+          default: return 'bg-gray-500';
       }
   };
 
-  const renderItem = ({ item }: { item: Asset }) => (
-    <TouchableOpacity 
-        onPress={() => router.push(`/asset/${item.id}`)}
-        onLongPress={() => showOptions(item)} 
-        activeOpacity={0.9}
-    >
-        <GlassCard className="mb-3 mx-4" intensity={30}>
-            <View className="flex-row justify-between items-center">
-                <View className="flex-1">
-                    <Text className="text-white text-lg font-bold">{item.name}</Text>
-                    <Text className="text-cyan-300 text-sm mb-1">{item.asset_tag} • {item.location}</Text>
-                    <View className="flex-row items-center">
-                         <View className={`w-2 h-2 rounded-full mr-2 ${getStatusColor(item.status).replace('text-', 'bg-')}`} />
-                         <Text className="text-gray-400 text-xs">{item.status}</Text>
-                    </View>
-                </View>
-                <View className="items-end mr-1">
-                    <Text className="text-white font-bold text-lg">${item.cost.toFixed(2)}</Text>
-                    <Text className="text-gray-500 text-xs">{item.category}</Text>
-                </View>
-            </View>
-        </GlassCard>
-    </TouchableOpacity>
+   const getStatusText = (status: string) => {
+      switch(status) {
+          case 'Active': return 'Activo';
+          case 'In Repair': return 'En Reparación';
+          case 'Disposed': return 'Eliminado';
+          default: return status;
+      }
+  };
+
+  const renderItem = ({ item, index }: { item: Asset, index: number }) => (
+    <Animated.View entering={FadeInDown.delay(index * 50).springify()}>
+      <TouchableOpacity 
+          onPress={() => router.push(`/asset/${item.id}`)}
+          onLongPress={() => showOptions(item)} 
+          activeOpacity={0.9}
+      >
+          <GlassCard className="mb-4 mx-4" intensity={20}>
+              <View className="flex-row justify-between items-start">
+                  <View className="flex-1 mr-2">
+                      <Text className="text-white text-lg font-bold mb-1">{item.name}</Text>
+                      <View className="flex-row flex-wrap gap-2 mb-2">
+                          <View className="bg-white/10 px-2 py-0.5 rounded-md">
+                              <Text className="text-neon-cyan text-xs font-medium">{item.category}</Text>
+                          </View>
+                          <View className="bg-white/10 px-2 py-0.5 rounded-md">
+                              <Text className="text-gray-300 text-xs">{item.asset_tag}</Text>
+                          </View>
+                      </View>
+                      
+                       <View className="flex-row items-center mt-1">
+                           <Ionicons name="location-outline" size={14} color="#9ca3af" />
+                           <Text className="text-gray-400 text-xs ml-1">{item.location}</Text>
+                       </View>
+                  </View>
+
+                  <View className="items-end">
+                      <Text className="text-white font-bold text-xl mb-2">${item.cost.toFixed(2)}</Text>
+                      <View className={`px-2 py-1 rounded-lg bg-black/40 border border-white/5 flex-row items-center gap-1`}>
+                           <View className={`w-2 h-2 rounded-full ${getStatusColor(item.status)}`} />
+                           <Text className="text-gray-300 text-xs font-medium">{getStatusText(item.status)}</Text>
+                      </View>
+                  </View>
+              </View>
+          </GlassCard>
+      </TouchableOpacity>
+    </Animated.View>
   );
 
   return (
-    <View className="flex-1 bg-slate-900">
+    <ScreenWrapper>
       <ToastNotification ref={toastRef} />
-      <LinearGradient
-        colors={['#0f172a', '#3f1a39']} // Purple tint
-        className="absolute w-full h-full"
-      />
-      <View className="pt-12 px-6 pb-4">
-          <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-white text-3xl font-bold">Activos</Text>
+      
+      <View className="pt-6 px-4 pb-4">
+          <View className="flex-row justify-between items-center mb-6">
+            <View>
+                <Text className="text-neon-purple font-bold tracking-widest text-xs uppercase mb-1">GESTIÓN</Text>
+                <Text className="text-white text-3xl font-black">Mis Activos</Text>
+            </View>
             <TouchableOpacity 
-            className="bg-cyan-500 p-3 rounded-full shadow-lg shadow-cyan-500/50"
-            onPress={() => {
-                setEditingAsset(null);
-                setModalVisible(true);
-            }}
+                activeOpacity={0.8}
+                onPress={() => {
+                    setEditingAsset(null);
+                    setModalVisible(true);
+                }}
             >
-            <Ionicons name="add" size={24} color="white" />
+                <LinearGradient
+                    colors={['#22d3ee', '#3b82f6']}
+                    className="w-12 h-12 rounded-full items-center justify-center shadow-lg shadow-neon-cyan/50"
+                >
+                    <Ionicons name="add" size={28} color="white" />
+                </LinearGradient>
             </TouchableOpacity>
         </View>
 
         {/* Search Bar */}
-        <View className="bg-white/10 rounded-xl flex-row items-center px-3 py-2 border border-white/10 mb-2">
-            <Ionicons name="search" size={20} color="#9ca3af" />
+        <GlassCard intensity={30} className="flex-row items-center px-4 py-3 mb-2" gradientBorder={false}>
+            <Ionicons name="search" size={20} color="#22d3ee" />
             <TextInput 
-                className="flex-1 text-white ml-2"
-                placeholder="Buscar por tag, nombre o lugar..."
+                className="flex-1 text-white ml-3 font-medium"
+                placeholder="Buscar activo..."
                 placeholderTextColor="#9ca3af"
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -192,7 +222,7 @@ export default function Inventory() {
                     <Ionicons name="close-circle" size={20} color="#9ca3af" />
                 </TouchableOpacity>
             )}
-        </View>
+        </GlassCard>
       </View>
 
       <FlatList
@@ -200,10 +230,17 @@ export default function Inventory() {
         keyExtractor={item => item.id.toString()}
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-            <Text className="text-gray-400 text-center mt-10">
-                {searchQuery ? 'No se encontraron activos.' : 'No hay activos registrados.'}
-            </Text>
+            <View className="items-center justify-center mt-20 opacity-50">
+                <Ionicons name="cube-outline" size={80} color="#22d3ee" />
+                <Text className="text-white text-lg font-bold mt-4">
+                    {searchQuery ? 'Sin resultados' : 'No hay activos'}
+                </Text>
+                <Text className="text-gray-400 text-center mt-2 px-10">
+                    {searchQuery ? 'Intenta con otro término de búsqueda' : 'Toca el botón + para registrar tu primer activo'}
+                </Text>
+            </View>
         }
       />
 
@@ -216,6 +253,6 @@ export default function Inventory() {
         onSave={handleSaveAsset}
         initialAsset={editingAsset}
       />
-    </View>
+    </ScreenWrapper>
   );
 }

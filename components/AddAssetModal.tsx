@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { Modal, View, Text, TextInput, TouchableOpacity, Alert, ScrollView, Platform, KeyboardAvoidingView } from 'react-native';
 import { GlassCard } from './GlassCard';
+import { NeonButton } from './NeonButton';
+import { Ionicons } from '@expo/vector-icons';
+import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
 
 interface Asset {
   id?: number;
@@ -39,15 +42,19 @@ export function AddAssetModal({ visible, onClose, onSave, initialAsset }: AddAss
         setCost(initialAsset.cost ? initialAsset.cost.toString() : '');
         setStatus(initialAsset.status || 'Active');
     } else {
-        setName('');
-        setAssetTag('');
-        setCategory('');
-        setLocation('');
-        setSerialNumber('');
-        setCost('');
-        setStatus('Active');
+        resetForm();
     }
   }, [initialAsset, visible]);
+
+  const resetForm = () => {
+    setName('');
+    setAssetTag('');
+    setCategory('');
+    setLocation('');
+    setSerialNumber('');
+    setCost('');
+    setStatus('Active');
+  };
 
   const handleSave = () => {
     if (!name || !assetTag || !cost) {
@@ -69,110 +76,145 @@ export function AddAssetModal({ visible, onClose, onSave, initialAsset }: AddAss
     onClose();
   };
 
+  const getStatusColor = (s: string) => {
+      switch(status) {
+          case 'Active': return '#4ade80';
+          case 'In Repair': return '#fbbf24';
+          case 'Disposed': return '#f87171';
+          default: return '#9ca3af';
+      }
+  };
+
   return (
     <Modal
-      animationType="slide"
+      animationType="none"
       transparent={true}
       visible={visible}
       onRequestClose={onClose}
     >
-      <View className="flex-1 justify-center items-center bg-black/50 p-4">
-        <GlassCard className="w-full max-w-lg max-h-[90%] p-0" intensity={90}>
-            <View className="p-4 h-full">
-                <Text className="text-white text-xl font-bold mb-4">{initialAsset ? 'Editar Activo' : 'Registrar Activo'}</Text>
-                
-                <ScrollView showsVerticalScrollIndicator={false}>
-                    <Text className="text-gray-300 mb-1 font-bold">Nombre del Activo</Text>
-                    <TextInput 
-                        className="bg-white/10 text-white p-3 rounded-lg mb-3 border border-white/20"
-                        placeholder="e.g. MacBook Pro M1"
-                        placeholderTextColor="#9ca3af"
-                        value={name}
-                        onChangeText={setName}
-                    />
-
-                    <View className="flex-row gap-2 mb-3">
-                        <View className="flex-1">
-                            <Text className="text-gray-300 mb-1 font-bold">Asset Tag (ID)</Text>
-                            <TextInput 
-                                className="bg-white/10 text-white p-3 rounded-lg border border-white/20"
-                                placeholder="TAG-XXX"
-                                placeholderTextColor="#9ca3af"
-                                value={assetTag}
-                                onChangeText={setAssetTag}
-                            />
-                        </View>
-                        <View className="flex-1">
-                             <Text className="text-gray-300 mb-1 font-bold">Costo ($)</Text>
-                            <TextInput 
-                                className="bg-white/10 text-white p-3 rounded-lg border border-white/20"
-                                placeholder="0.00"
-                                placeholderTextColor="#9ca3af"
-                                keyboardType="numeric"
-                                value={cost}
-                                onChangeText={setCost}
-                            />
-                        </View>
-                    </View>
-
-                    <Text className="text-gray-300 mb-1 font-bold">Categoría</Text>
-                    <TextInput 
-                        className="bg-white/10 text-white p-3 rounded-lg mb-3 border border-white/20"
-                        placeholder="e.g. IT Equipment"
-                        placeholderTextColor="#9ca3af"
-                        value={category}
-                        onChangeText={setCategory}
-                    />
-
-                    <Text className="text-gray-300 mb-1 font-bold">Ubicación</Text>
-                    <TextInput 
-                        className="bg-white/10 text-white p-3 rounded-lg mb-3 border border-white/20"
-                        placeholder="e.g. Oficinas Centrales"
-                        placeholderTextColor="#9ca3af"
-                        value={location}
-                        onChangeText={setLocation}
-                    />
-
-                    <Text className="text-gray-300 mb-1 font-bold">Número de Serie</Text>
-                    <TextInput 
-                        className="bg-white/10 text-white p-3 rounded-lg mb-3 border border-white/20"
-                        placeholder="SN-12345678"
-                        placeholderTextColor="#9ca3af"
-                        value={serialNumber}
-                        onChangeText={setSerialNumber}
-                    />
-
-                     <Text className="text-gray-300 mb-1 font-bold">Estado</Text>
-                    <View className="flex-row flex-wrap gap-2 mb-6">
-                        {['Active', 'In Repair', 'Disposed'].map((s) => (
-                            <TouchableOpacity 
-                                key={s}
-                                onPress={() => setStatus(s)}
-                                className={`px-4 py-2 rounded-full border ${status === s ? 'bg-cyan-500 border-cyan-500' : 'bg-transparent border-gray-500'}`}
-                            >
-                                <Text className="text-white text-xs">{s}</Text>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        className="flex-1"
+      >
+        <Animated.View 
+            entering={FadeIn.duration(300)}
+            className="flex-1 justify-center items-center bg-black/60 p-4"
+        >
+            <Animated.View 
+                entering={SlideInDown.springify().damping(15)}
+                className="w-full max-w-lg"
+            >
+                <GlassCard className="p-0 border-neon-cyan/20" intensity={80}>
+                    <View className="p-6">
+                        <View className="flex-row justify-between items-center mb-6">
+                            <View>
+                                <Text className="text-neon-cyan font-bold tracking-widest text-xs uppercase mb-1">
+                                    {initialAsset ? 'ACTUALIZAR' : 'NUEVO REGISTRO'}
+                                </Text>
+                                <Text className="text-white text-2xl font-black">
+                                    {initialAsset ? 'Editar Activo' : 'Registrar Activo'}
+                                </Text>
+                            </View>
+                            <TouchableOpacity onPress={onClose} className="bg-white/10 p-2 rounded-full">
+                                <Ionicons name="close" size={24} color="white" />
                             </TouchableOpacity>
-                        ))}
-                    </View>
-                </ScrollView>
+                        </View>
+                        
+                        <ScrollView showsVerticalScrollIndicator={false} className="max-h-[60vh]">
+                            <Text className="text-gray-400 mb-2 font-bold text-xs uppercase ml-1">Información General</Text>
+                            <TextInput 
+                                className="bg-black/20 text-white p-4 rounded-xl mb-4 border border-white/10 focus:border-neon-cyan/50 font-medium"
+                                placeholder="Nombre (ej. MacBook Pro)"
+                                placeholderTextColor="#4b5563"
+                                value={name}
+                                onChangeText={setName}
+                            />
 
-                <View className="flex-row justify-end space-x-3 mt-4 pt-4 border-t border-white/10">
-                    <TouchableOpacity 
-                        onPress={onClose}
-                        className="py-3 px-6 rounded-lg bg-gray-600"
-                    >
-                        <Text className="text-white font-bold">Cancelar</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                        onPress={handleSave}
-                        className="py-3 px-6 rounded-lg bg-cyan-500 shadow-lg shadow-cyan-500/50"
-                    >
-                        <Text className="text-white font-bold">Guardar</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        </GlassCard>
-      </View>
+                            <View className="flex-row gap-3 mb-4">
+                                <View className="flex-1">
+                                    <TextInput 
+                                        className="bg-black/20 text-white p-4 rounded-xl border border-white/10 focus:border-neon-cyan/50 font-medium"
+                                        placeholder="Asset Tag"
+                                        placeholderTextColor="#4b5563"
+                                        value={assetTag}
+                                        onChangeText={setAssetTag}
+                                    />
+                                </View>
+                                <View className="flex-1">
+                                    <TextInput 
+                                        className="bg-black/20 text-white p-4 rounded-xl border border-white/10 focus:border-neon-cyan/50 font-medium"
+                                        placeholder="Costo ($)"
+                                        placeholderTextColor="#4b5563"
+                                        keyboardType="numeric"
+                                        value={cost}
+                                        onChangeText={setCost}
+                                    />
+                                </View>
+                            </View>
+
+                            <Text className="text-gray-400 mb-2 font-bold text-xs uppercase ml-1">Detalles Técnicos</Text>
+                            <TextInput 
+                                className="bg-black/20 text-white p-4 rounded-xl mb-4 border border-white/10 focus:border-neon-cyan/50 font-medium"
+                                placeholder="Categoría"
+                                placeholderTextColor="#4b5563"
+                                value={category}
+                                onChangeText={setCategory}
+                            />
+
+                            <TextInput 
+                                className="bg-black/20 text-white p-4 rounded-xl mb-4 border border-white/10 focus:border-neon-cyan/50 font-medium"
+                                placeholder="Ubicación"
+                                placeholderTextColor="#4b5563"
+                                value={location}
+                                onChangeText={setLocation}
+                            />
+
+                            <TextInput 
+                                className="bg-black/20 text-white p-4 rounded-xl mb-4 border border-white/10 focus:border-neon-cyan/50 font-medium"
+                                placeholder="Número de Serie"
+                                placeholderTextColor="#4b5563"
+                                value={serialNumber}
+                                onChangeText={setSerialNumber}
+                            />
+
+                             <Text className="text-gray-400 mb-3 font-bold text-xs uppercase ml-1">Estado Operativo</Text>
+                            <View className="flex-row flex-wrap gap-2 mb-2">
+                                {[
+                                    { label: 'Activo', value: 'Active', color: 'bg-green-500' },
+                                    { label: 'Reparación', value: 'In Repair', color: 'bg-yellow-500' },
+                                    { label: 'Baja', value: 'Disposed', color: 'bg-red-500' }
+                                ].map((s) => (
+                                    <TouchableOpacity 
+                                        key={s.value}
+                                        onPress={() => setStatus(s.value)}
+                                        activeOpacity={0.7}
+                                        className={`px-4 py-2 rounded-xl flex-row items-center border ${status === s.value ? 'bg-white/10 border-white/30' : 'bg-transparent border-white/5'}`}
+                                    >
+                                        <View className={`w-2 h-2 rounded-full mr-2 ${status === s.value ? s.color : 'bg-gray-600'}`} />
+                                        <Text className={`text-xs font-bold ${status === s.value ? 'text-white' : 'text-gray-500'}`}>{s.label}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        </ScrollView>
+
+                        <View className="mt-8">
+                            <NeonButton 
+                                title={initialAsset ? "Actualizar Activo" : "Registrar Activo"} 
+                                onPress={handleSave}
+                                variant={initialAsset ? 'secondary' : 'primary'}
+                            />
+                            <TouchableOpacity 
+                                onPress={onClose}
+                                className="mt-2 py-3 items-center"
+                            >
+                                <Text className="text-gray-500 font-bold">CANCELAR</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </GlassCard>
+            </Animated.View>
+        </Animated.View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { LinearGradient } from 'expo-linear-gradient';
 import { GlassCard } from '../../components/GlassCard';
+import { NeonButton } from '../../components/NeonButton';
 import { Ionicons } from '@expo/vector-icons';
-import { ParticleBackground } from '../../components/ParticleBackground';
+import { ScreenWrapper } from '../../components/ScreenWrapper';
+import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 
 type Asset = {
   id: number;
@@ -35,9 +36,11 @@ export default function AssetDetails() {
 
   if (!asset) {
     return (
-        <View className="flex-1 bg-slate-900 justify-center items-center">
-            <Text className="text-white">Cargando...</Text>
-        </View>
+        <ScreenWrapper>
+             <View className="flex-1 justify-center items-center">
+                <Text className="text-neon-cyan">Cargando...</Text>
+            </View>
+        </ScreenWrapper>
     );
   }
 
@@ -48,100 +51,142 @@ export default function AssetDetails() {
   const yearlyDepreciation = asset.cost / usefulLife;
   const currentValue = Math.max(0, asset.cost - (yearlyDepreciation * ageInYears));
 
+  const getStatusColor = (status: string) => {
+      switch(status) {
+          case 'Active': return 'bg-green-500';
+          case 'In Repair': return 'bg-yellow-500';
+          case 'Disposed': return 'bg-red-500';
+          default: return 'bg-gray-500';
+      }
+  };
+
+  const getStatusText = (status: string) => {
+    switch(status) {
+        case 'Active': return 'Operativo';
+        case 'In Repair': return 'En Taller';
+        case 'Disposed': return 'Fuera de Uso';
+        default: return status;
+    }
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+        "Eliminar Activo", 
+        "¿Estás seguro de que deseas eliminar este activo permanentemente?", 
+        [
+            { text: "Cancelar", style: "cancel" },
+            { 
+                text: "Eliminar", 
+                style: "destructive", 
+                onPress: async () => {
+                    await db.runAsync('DELETE FROM assets WHERE id = ?', id);
+                    router.back();
+                }
+            }
+        ]
+    );
+  };
+
   return (
-    <View className="flex-1 bg-slate-900">
-      <LinearGradient
-        colors={['#0f172a', '#1e1b4b']}
-        className="absolute w-full h-full"
-      />
-      
-      <View className="pt-12 px-6 flex-row items-center justify-between pb-4 z-10">
-        <TouchableOpacity onPress={() => router.back()} className="bg-slate-700/50 p-2 rounded-full">
-            <Ionicons name="arrow-back" size={24} color="white" />
+    <ScreenWrapper>
+      <View className="pt-6 px-6 flex-row items-center justify-between pb-6">
+        <TouchableOpacity 
+            onPress={() => router.back()} 
+            className="bg-white/10 p-2 rounded-full border border-white/10"
+        >
+            <Ionicons name="chevron-back" size={24} color="white" />
         </TouchableOpacity>
-        <Text className="text-white text-xl font-bold flex-1 text-center mr-10">Detalles del Activo</Text>
+        <Text className="text-white text-xl font-black">Detalle</Text>
+        <View className="w-10" /> 
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }} className="px-4">
+      <ScrollView showsVerticalScrollIndicator={false} className="px-4">
         
         {/* Header Card */}
-        <GlassCard className="mb-6 border-cyan-500/30">
-            <View className="flex-row justify-between items-start">
-                <View>
-                    <Text className="text-cyan-400 font-bold text-lg mb-1">{asset.asset_tag}</Text>
-                    <Text className="text-white text-3xl font-bold">{asset.name}</Text>
-                    <Text className="text-gray-400 text-sm mt-1">{asset.category}</Text>
+        <Animated.View entering={FadeInDown.delay(100).springify()}>
+            <GlassCard className="mb-6 p-6" intensity={40}>
+                <View className="flex-row justify-between items-start mb-4">
+                    <View className="flex-1">
+                        <Text className="text-neon-cyan font-bold tracking-widest text-xs uppercase mb-1">{asset.asset_tag}</Text>
+                        <Text className="text-white text-3xl font-black mb-1">{asset.name}</Text>
+                        <View className="bg-white/10 self-start px-2 py-0.5 rounded-md">
+                            <Text className="text-gray-400 text-xs font-medium uppercase tracking-tighter">{asset.category}</Text>
+                        </View>
+                    </View>
+                    <View className={`px-3 py-1 rounded-lg bg-black/40 border border-white/5 flex-row items-center gap-2`}>
+                        <View className={`w-2 h-2 rounded-full ${getStatusColor(asset.status)} shadow-lg shadow-white/50`} />
+                        <Text className="text-white text-xs font-bold">{getStatusText(asset.status)}</Text>
+                    </View>
                 </View>
-                <View className={`px-3 py-1 rounded-full border ${asset.status === 'Active' ? 'border-green-500 bg-green-500/20' : 'border-gray-500'}`}>
-                    <Text className="text-white text-xs font-bold">{asset.status}</Text>
-                </View>
-            </View>
-        </GlassCard>
+            </GlassCard>
+        </Animated.View>
 
         {/* Info Grid */}
-        <View className="flex-row flex-wrap gap-4 mb-6">
-            <View className="flex-1">
-                <GlassCard className="h-full justify-center">
-                    <Ionicons name="location-outline" size={24} color="#22d3ee" />
-                    <Text className="text-gray-400 text-xs mt-2">Ubicación</Text>
-                    <Text className="text-white font-bold">{asset.location}</Text>
+        <View className="flex-row gap-4 mb-6">
+            <Animated.View entering={FadeInRight.delay(200).springify()} className="flex-1">
+                <GlassCard className="p-4 items-center" intensity={20}>
+                    <View className="bg-neon-purple/20 w-10 h-10 rounded-full items-center justify-center mb-2">
+                        <Ionicons name="location" size={20} color="#a855f7" />
+                    </View>
+                    <Text className="text-gray-500 text-[10px] font-black uppercase">Ubicación</Text>
+                    <Text className="text-white font-bold text-center mt-1" numberOfLines={1}>{asset.location}</Text>
                 </GlassCard>
-            </View>
-            <View className="flex-1">
-                <GlassCard className="h-full justify-center">
-                    <Ionicons name="barcode-outline" size={24} color="#a78bfa" />
-                    <Text className="text-gray-400 text-xs mt-2">Nº Serie</Text>
-                    <Text className="text-white font-bold" numberOfLines={1}>{asset.serial_number || 'N/A'}</Text>
+            </Animated.View>
+            <Animated.View entering={FadeInRight.delay(300).springify()} className="flex-1">
+                <GlassCard className="p-4 items-center" intensity={20}>
+                    <View className="bg-blue-500/20 w-10 h-10 rounded-full items-center justify-center mb-2">
+                        <Ionicons name="qr-code" size={20} color="#60a5fa" />
+                    </View>
+                    <Text className="text-gray-500 text-[10px] font-black uppercase">Serie</Text>
+                    <Text className="text-white font-bold text-center mt-1" numberOfLines={1}>{asset.serial_number || 'S/N'}</Text>
                 </GlassCard>
-            </View>
+            </Animated.View>
         </View>
 
         {/* Financials & Depreciation */}
-        <Text className="text-white text-xl font-bold mb-3">Valoración</Text>
-        <GlassCard className="mb-6">
-            <View className="flex-row justify-between mb-4 pb-4 border-b border-white/10">
-                <View>
-                    <Text className="text-gray-400 text-xs">Costo Original</Text>
-                    <Text className="text-white text-xl font-bold">${asset.cost.toFixed(2)}</Text>
+        <Animated.View entering={FadeInDown.delay(400).springify()}>
+            <Text className="text-white/80 font-bold text-lg mb-4 ml-2">Valoración Económica</Text>
+            <GlassCard className="mb-6 p-6" intensity={30}>
+                <View className="flex-row justify-between mb-6 pb-6 border-b border-white/5">
+                    <View>
+                        <Text className="text-gray-500 text-xs font-black uppercase mb-1">Costo Original</Text>
+                        <Text className="text-white text-2xl font-black">${asset.cost.toFixed(2)}</Text>
+                    </View>
+                    <View className="items-end">
+                        <Text className="text-gray-500 text-xs font-black uppercase mb-1">Adquirido el</Text>
+                        <Text className="text-white text-lg font-bold">{purchaseDate.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</Text>
+                    </View>
                 </View>
-                <View className="items-end">
-                    <Text className="text-gray-400 text-xs">Fecha Compra</Text>
-                    <Text className="text-white text-xl font-bold">{purchaseDate.toLocaleDateString()}</Text>
-                </View>
-            </View>
-            
-            <View className="flex-row justify-between items-center">
+                
                 <View>
-                    <Text className="text-green-400 text-xs font-bold mb-1">VALOR ACTUAL (Est.)</Text>
-                    <Text className="text-green-400 text-4xl font-bold tracking-tighter">
+                    <View className="flex-row items-center mb-2">
+                        <Ionicons name="trending-up" size={16} color="#4ade80" className="mr-1" />
+                        <Text className="text-green-500 text-xs font-black uppercase">Valor Actual Proyectado</Text>
+                    </View>
+                    <Text className="text-white text-5xl font-black tracking-tighter shadow-xl">
                         ${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </Text>
-                    <Text className="text-gray-500 text-xs mt-1">Depreciación Lineal (5 años)</Text>
+                    <View className="bg-white/5 rounded-lg p-3 mt-4 flex-row items-center">
+                        <Ionicons name="information-circle-outline" size={18} color="#9ca3af" />
+                        <Text className="text-gray-500 text-[10px] ml-2 flex-1">
+                            Estimación basada en depreciación lineal a 5 años. El valor real puede variar según el mercado y uso.
+                        </Text>
+                    </View>
                 </View>
-                <View className="bg-slate-700/50 p-3 rounded-full">
-                    <Ionicons name="trending-down" size={24} color="#ef4444" />
-                </View>
-            </View>
-        </GlassCard>
+            </GlassCard>
+        </Animated.View>
 
-        {/* Actions (Placeholder for future actions) */}
-        <TouchableOpacity 
-            className="bg-red-500/20 border border-red-500/50 p-4 rounded-xl flex-row justify-center items-center"
-            onPress={() => {
-                Alert.alert("Eliminar", "¿Seguro?", [
-                    { text: "Cancelar" },
-                    { text: "Eliminar", style: "destructive", onPress: async () => {
-                        await db.runAsync('DELETE FROM assets WHERE id = ?', id);
-                        router.back();
-                    }}
-                ])
-            }}
-        >
-            <Ionicons name="trash-outline" size={20} color="#f87171" />
-            <Text className="text-red-400 font-bold ml-2">Dar de Baja / Eliminar</Text>
-        </TouchableOpacity>
+        {/* Actions */}
+        <Animated.View entering={FadeInDown.delay(500).springify()} className="pb-10">
+            <NeonButton 
+                variant="danger" 
+                title="Eliminar Activo" 
+                icon="trash-outline"
+                onPress={handleDelete}
+            />
+        </Animated.View>
 
       </ScrollView>
-    </View>
+    </ScreenWrapper>
   );
 }

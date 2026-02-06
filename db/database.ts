@@ -17,21 +17,17 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
     await db.execAsync(`
       PRAGMA journal_mode = WAL;
       
-      CREATE TABLE IF NOT EXISTS products (
+      CREATE TABLE IF NOT EXISTS assets (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        price REAL NOT NULL,
-        stock INTEGER NOT NULL,
+        asset_tag TEXT UNIQUE,
         category TEXT,
+        location TEXT,
+        serial_number TEXT,
+        purchase_date TEXT,
+        cost REAL,
+        status TEXT, -- 'Active', 'In Repair', 'Disposed'
         image_url TEXT
-      );
-
-      CREATE TABLE IF NOT EXISTS transactions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        type TEXT NOT NULL, -- 'SALE', 'RESTOCK', 'EXPENSE'
-        amount REAL NOT NULL,
-        date TEXT NOT NULL,
-        note TEXT
       );
 
       CREATE TABLE IF NOT EXISTS settings (
@@ -40,14 +36,10 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
       );
       
       -- Seed some initial data for demo
-      INSERT INTO products (name, price, stock, category) VALUES 
-      ('Licencia Digital', 49.99, 100, 'Software'),
-      ('Soporte Premium', 29.99, 50, 'Servicio'),
-      ('Consultoría', 99.99, 10, 'Servicio');
-      
-      INSERT INTO transactions (type, amount, date, note) VALUES
-      ('SALE', 49.99, datetime('now', '-1 day'), 'Venta Inicial'),
-      ('SALE', 149.99, datetime('now'), 'Licencia por Volumen');
+      INSERT INTO assets (name, asset_tag, category, location, cost, status, purchase_date) VALUES 
+      ('Dell XPS 15', 'TAG-001', 'Laptops', 'Office 101', 1500.00, 'Active', datetime('now', '-30 days')),
+      ('Herman Miller Chair', 'TAG-002', 'Furniture', 'Office 101', 800.00, 'Active', datetime('now', '-60 days')),
+      ('Projector 4K', 'TAG-003', 'Electronics', 'Conf Room A', 1200.00, 'In Repair', datetime('now', '-10 days'));
     `);
     
     currentDbVersion = 1;

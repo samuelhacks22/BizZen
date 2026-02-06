@@ -2,37 +2,33 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSQLiteContext } from 'expo-sqlite';
-import Animated, { useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import { GlassCard } from '../../components/GlassCard';
 import { Ionicons } from '@expo/vector-icons';
 import { ParticleBackground } from '../../components/ParticleBackground';
 
 export default function Dashboard() {
   const db = useSQLiteContext();
-  const [stats, setStats] = useState({ sales: 0, products: 0, xp: 0 });
+  const [stats, setStats] = useState({ 
+    totalValue: 0, 
+    totalAssets: 0, 
+    activeCount: 0,
+    repairCount: 0 
+  });
   const [refreshing, setRefreshing] = useState(false);
-
-  // Gamification Logic
-  const LEVEL_THRESHOLDS = [0, 100, 500, 1000, 5000];
-  const currentLevel = LEVEL_THRESHOLDS.findIndex(t => stats.xp < t) || LEVEL_THRESHOLDS.length;
-  const nextLevelXp = LEVEL_THRESHOLDS[currentLevel] || 10000;
-  const progress = (stats.xp / nextLevelXp) * 100;
 
   const loadData = async () => {
     try {
-      const salesResult = await db.getAllAsync<{ total: number }>('SELECT SUM(amount) as total FROM transactions WHERE type = "SALE"');
-      const productsResult = await db.getAllAsync<{ count: number }>('SELECT COUNT(*) as count FROM products');
+      const valueResult = await db.getAllAsync<{ total: number }>('SELECT SUM(cost) as total FROM assets WHERE status != "Disposed"');
+      const countResult = await db.getAllAsync<{ count: number }>('SELECT COUNT(*) as count FROM assets WHERE status != "Disposed"');
       
-      const totalSales = salesResult[0]?.total || 0;
-      const count = productsResult[0]?.count || 0;
-      
-      // XP = Sales + (Products * 10)
-      const calculatedXp = Math.floor(totalSales + (count * 10));
+      const activeResult = await db.getAllAsync<{ count: number }>('SELECT COUNT(*) as count FROM assets WHERE status = "Active"');
+      const repairResult = await db.getAllAsync<{ count: number }>('SELECT COUNT(*) as count FROM assets WHERE status = "In Repair"');
 
       setStats({
-        sales: totalSales,
-        products: count,
-        xp: calculatedXp
+        totalValue: valueResult[0]?.total || 0,
+        totalAssets: countResult[0]?.count || 0,
+        activeCount: activeResult[0]?.count || 0,
+        repairCount: repairResult[0]?.count || 0
       });
     } catch (e) {
       console.error(e);
@@ -49,12 +45,6 @@ export default function Dashboard() {
     setRefreshing(false);
   };
 
-  const ProgressStyle = useAnimatedStyle(() => {
-    return {
-      width: withTiming(`${progress}%`, { duration: 1000 })
-    };
-  });
-
   return (
     <View className="flex-1 bg-slate-900">
       <LinearGradient
@@ -68,22 +58,21 @@ export default function Dashboard() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#22d3ee" />}
       >
         <View className="pt-12 px-6 pb-6">
-          <Text className="text-gray-400 text-lg">Bienvenido, Magnate</Text>
-          <Text className="text-white text-3xl font-bold">Resumen del Imperio</Text>
+          <Text className="text-gray-400 text-lg">Control de Inventario</Text>
+          <Text className="text-white text-3xl font-bold">Resumen de Activos</Text>
         </View>
 
-        {/* Level Card */}
+        {/* Hero Card: Total Value */}
         <View className="px-4 mb-6">
           <GlassCard className="border-cyan-500/30">
-            <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-cyan-400 font-bold text-lg">Nivel {currentLevel}</Text>
-              <Text className="text-gray-300 text-sm">{stats.xp} / {nextLevelXp} XP</Text>
+            <View className="flex-row items-center mb-2">
+                <View className="p-2 bg-green-500/20 rounded-full mr-3">
+                    <Ionicons name="cash-outline" size={24} color="#4ade80" />
+                </View>
+                <Text className="text-gray-300 font-semibold">Valor Total de Activos</Text>
             </View>
-            <View className="h-4 bg-slate-700 rounded-full overflow-hidden">
-              <Animated.View className="h-full bg-cyan-400 shadow-lg shadow-cyan-500/50" style={ProgressStyle} />
-            </View>
-            <Text className="text-gray-400 text-xs mt-2 text-center">
-              ¡Haz más ventas para alcanzar el Nivel {currentLevel + 1}!
+            <Text className="text-4xl text-white font-bold tracking-tighter">
+                ${stats.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </Text>
           </GlassCard>
         </View>
@@ -92,53 +81,25 @@ export default function Dashboard() {
         <View className="flex-row flex-wrap px-2">
           <View className="w-1/2 p-2">
             <GlassCard>
-              <Ionicons name="cash-outline" size={32} color="#4ade80" />
-              <Text className="text-gray-400 mt-2">Ingresos Totales</Text>
-              <Text className="text-white text-2xl font-bold">${stats.sales.toFixed(2)}</Text>
+              <Ionicons name="cube-outline" size={32} color="#22d3ee" />
+              <Text className="text-gray-400 mt-2">Total Activos</Text>
+              <Text className="text-white text-2xl font-bold">{stats.totalAssets}</Text>
             </GlassCard>
           </View>
           <View className="w-1/2 p-2">
             <GlassCard>
-              <Ionicons name="cube-outline" size={32} color="#f472b6" />
-              <Text className="text-gray-400 mt-2">Productos Activos</Text>
-              <Text className="text-white text-2xl font-bold">{stats.products}</Text>
+              <Ionicons name="checkmark-circle-outline" size={32} color="#4ade80" />
+              <Text className="text-gray-400 mt-2">Activos</Text>
+              <Text className="text-white text-2xl font-bold">{stats.activeCount}</Text>
             </GlassCard>
           </View>
-        </View>
-
-        {/* Quests / Daily Goals */}
-        <View className="px-4 mt-4">
-          <Text className="text-white text-xl font-bold mb-4">Misiones Diarias</Text>
-          
-          <GlassCard className="mb-3 flex-row items-center justify-between">
-            <View className="flex-row items-center flex-1">
-              <View className={`w-6 h-6 rounded-full border-2 mr-3 items-center justify-center ${stats.sales > 100 ? 'bg-green-500 border-green-500' : 'border-gray-500'}`}>
-                {stats.sales > 100 && <Ionicons name="checkmark" size={16} color="white" />}
-              </View>
-              <View>
-                <Text className="text-white font-semibold">Primera Gran Venta</Text>
-                <Text className="text-gray-400 text-xs">Logra $100 en ingresos</Text>
-              </View>
-            </View>
-            <View>
-               <Text className="text-yellow-400 font-bold">+50 XP</Text>
-            </View>
-          </GlassCard>
-
-           <GlassCard className="mb-3 flex-row items-center justify-between">
-            <View className="flex-row items-center flex-1">
-              <View className={`w-6 h-6 rounded-full border-2 mr-3 items-center justify-center ${stats.products >= 5 ? 'bg-green-500 border-green-500' : 'border-gray-500'}`}>
-                {stats.products >= 5 && <Ionicons name="checkmark" size={16} color="white" />}
-              </View>
-              <View>
-                 <Text className="text-white font-semibold">Almacenamiento</Text>
-                 <Text className="text-gray-400 text-xs">Ten más de 5 productos</Text>
-              </View>
-            </View>
-            <View>
-               <Text className="text-yellow-400 font-bold">+100 XP</Text>
-            </View>
-          </GlassCard>
+           <View className="w-1/2 p-2">
+            <GlassCard>
+              <Ionicons name="construct-outline" size={32} color="#fbbf24" />
+              <Text className="text-gray-400 mt-2">En Reparación</Text>
+              <Text className="text-white text-2xl font-bold">{stats.repairCount}</Text>
+            </GlassCard>
+          </View>
         </View>
 
       </ScrollView>

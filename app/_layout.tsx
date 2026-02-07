@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { Slot, Stack } from "expo-router";
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { SQLiteProvider } from 'expo-sqlite';
 import { migrateDbIfNeeded } from '../db/database';
@@ -10,15 +11,15 @@ import { migrateDbIfNeeded } from '../db/database';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [loaded] = useFonts({
-    // Load custom fonts here if needed
+  const [loaded, error] = useFonts({
+    ...Ionicons.font,
   });
 
   useEffect(() => {
-    if (loaded) { // or always if no fonts yet
+    if (loaded || error) {
        SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, error]);
 
   return (
     <SQLiteProvider databaseName="managex.db" onInit={migrateDbIfNeeded}>

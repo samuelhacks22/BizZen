@@ -1,7 +1,7 @@
 import { type SQLiteDatabase } from 'expo-sqlite';
 
 export async function migrateDbIfNeeded(db: SQLiteDatabase) {
-  const DATABASE_VERSION = 2; // Incremented to force migration
+  const DATABASE_VERSION = 3; // Incremented to add more seed data
   
   let { user_version: currentDbVersion } = await db.getFirstAsync<{ user_version: number }>(
     'PRAGMA user_version'
@@ -41,7 +41,7 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
     currentDbVersion = 1;
   }
 
-  // Migration from 1 to 2 (Ensuring 'assets' table exists if previous run failed or was partial)
+  // Migration from 1 to 2
   if (currentDbVersion === 1) {
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS assets (
@@ -58,6 +58,26 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
       );
     `);
     currentDbVersion = 2;
+  }
+
+  // Migration from 2 to 3: Multi-category Seeding
+  if (currentDbVersion === 2) {
+    const assetsCount = await db.getFirstAsync<{ count: number }>('SELECT COUNT(*) as count FROM assets');
+    
+    // Only seed if empty or very few items (to avoid double seeding if version was somehow 2 but data already exists)
+    if (!assetsCount || assetsCount.count < 5) {
+       await db.execAsync(`
+         INSERT INTO assets (name, asset_tag, category, location, cost, status, purchase_date) VALUES 
+         ('iPhone 15 Pro', 'TAG-004', 'Mobile', 'Main Office', 1099.00, 'Active', datetime('now', '-5 days')),
+         ('Tesla Model 3', 'TAG-005', 'Vehicles', 'Garage A', 35000.00, 'Active', datetime('now', '-180 days')),
+         ('Sony A7 IV', 'TAG-006', 'Electronics', 'Studio', 2499.00, 'Active', datetime('now', '-45 days')),
+         ('Standing Desk', 'TAG-007', 'Furniture', 'Home Office', 599.00, 'Active', datetime('now', '-20 days')),
+         ('Cisco Router', 'TAG-008', 'Network', 'Server Room', 1200.00, 'Active', datetime('now', '-90 days')),
+         ('iPad Pro', 'TAG-009', 'Tablets', 'Office 102', 899.00, 'In Repair', datetime('now', '-2 days')),
+         ('MacBook Air M3', 'TAG-010', 'Laptops', 'Remote', 1299.00, 'Active', datetime('now', '-15 days'));
+       `);
+    }
+    currentDbVersion = 3;
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);

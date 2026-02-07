@@ -40,7 +40,7 @@ export function NeonButton({ title, icon, variant = 'primary', className, ...pro
         end={{ x: 1, y: 0 }}
         className="px-6 py-3 rounded-xl flex-row items-center justify-center"
       >
-        {icon && <Ionicons name={icon} size={20} color="white" className={title ? "mr-2" : ""} />}
+        {icon && <Ionicons name={icon} size={20} color="white" style={title ? { marginRight: 8 } : {}} />}
         {title && <Text className="text-white font-bold text-base">{title}</Text>}
       </LinearGradient>
     </TouchableOpacity>

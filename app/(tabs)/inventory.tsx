@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { GlassCard } from '../../components/GlassCard';
 import { Ionicons } from '@expo/vector-icons';
 import { AddAssetModal } from '../../components/AddAssetModal';
 import { ToastNotification, ToastRef } from '../../components/ToastNotification';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { ScreenWrapper } from '../../components/ScreenWrapper';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -32,7 +32,7 @@ export default function Inventory() {
 
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
 
-  const loadAssets = async () => {
+  const loadAssets = useCallback(async () => {
     try {
         const result = await db.getAllAsync<Asset>('SELECT * FROM assets ORDER BY id DESC');
         setAssets(result);
@@ -40,7 +40,13 @@ export default function Inventory() {
     } catch (e) {
         console.error("Failed to load assets", e);
     }
-  };
+  }, [db]);
+
+  useFocusEffect(
+    useCallback(() => {
+        loadAssets();
+    }, [loadAssets])
+  );
 
   useEffect(() => {
     const lowerText = searchQuery.toLowerCase();
@@ -120,9 +126,6 @@ export default function Inventory() {
     );
   };
 
-  useEffect(() => {
-    loadAssets();
-  }, []);
 
   const getStatusColor = (status: string) => {
       switch(status) {

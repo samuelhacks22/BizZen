@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Share, Alert } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { GlassCard } from '../../components/GlassCard';
 import { Ionicons } from '@expo/vector-icons';
 import { ScreenWrapper } from '../../components/ScreenWrapper';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useFocusEffect } from 'expo-router';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 
 type CategoryStat = {
@@ -19,7 +20,7 @@ export default function Reports() {
   const [categoryStats, setCategoryStats] = useState<CategoryStat[]>([]);
   const [totalValue, setTotalValue] = useState(0);
 
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     try {
       // Get stats by category
       const result = await db.getAllAsync<CategoryStat>(`
@@ -36,7 +37,13 @@ export default function Reports() {
     } catch (e) {
       console.error(e);
     }
-  };
+  }, [db]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadStats();
+    }, [loadStats])
+  );
 
   const handleExport = async () => {
     try {
@@ -52,9 +59,6 @@ export default function Reports() {
     }
   };
 
-  useEffect(() => {
-    loadStats();
-  }, []);
 
   const renderItem = ({ item, index }: { item: CategoryStat, index: number }) => {
     const percentage = totalValue > 0 ? (item.totalValue / totalValue) * 100 : 0;

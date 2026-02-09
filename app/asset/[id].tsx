@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { GlassCard } from '../../components/GlassCard';
 import { NeonButton } from '../../components/NeonButton';
 import { Ionicons } from '@expo/vector-icons';
 import { ScreenWrapper } from '../../components/ScreenWrapper';
+import { AddAssetModal } from '../../components/AddAssetModal';
+import { ToastNotification, ToastRef } from '../../components/ToastNotification';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 
 type Asset = {
@@ -26,13 +28,25 @@ export default function AssetDetails() {
   const router = useRouter();
   const [asset, setAsset] = useState<Asset | null>(null);
 
-  useEffect(() => {
+  const [modalVisible, setModalVisible] = useState(false);
+  const toastRef = useRef<ToastRef>(null);
+
+  const loadAsset = useCallback(async () => {
     if (id) {
-        db.getFirstAsync<Asset>('SELECT * FROM assets WHERE id = ?', id)
-          .then(setAsset)
-          .catch(console.error);
+        try {
+            const result = await db.getFirstAsync<Asset>('SELECT * FROM assets WHERE id = ?', id);
+            setAsset(result);
+        } catch (e) {
+            console.error(e);
+        }
     }
-  }, [id]);
+  }, [id, db]);
+
+  useFocusEffect(
+    useCallback(() => {
+        loadAsset();
+    }, [loadAsset])
+  );
 
   if (!asset) {
     return (
@@ -69,6 +83,20 @@ export default function AssetDetails() {
     }
   };
 
+  const handleSaveAsset = async (assetData: Omit<Asset, 'id'> & { id?: number }) => {
+    try {
+        await db.runAsync(
+            'UPDATE assets SET name = ?, asset_tag = ?, category = ?, location = ?, serial_number = ?, cost = ?, status = ? WHERE id = ?',
+            assetData.name, assetData.asset_tag, assetData.category, assetData.location, assetData.serial_number, assetData.cost, assetData.status, Number(id)
+        );
+        loadAsset();
+        toastRef.current?.show("¡Activo Actualizado!", "success");
+    } catch (e) {
+         Alert.alert("Error", "Error al actualizar activo");
+         console.error(e);
+    }
+  };
+
   const handleDelete = () => {
     Alert.alert(
         "Eliminar Activo", 
@@ -89,6 +117,7 @@ export default function AssetDetails() {
 
   return (
     <ScreenWrapper>
+      <ToastNotification ref={toastRef} />
       <View className="pt-6 px-6 flex-row items-center justify-between pb-6">
         <TouchableOpacity 
             onPress={() => router.back()} 
@@ -97,7 +126,12 @@ export default function AssetDetails() {
             <Ionicons name="chevron-back" size={24} color="white" />
         </TouchableOpacity>
         <Text className="text-white text-xl font-black">Detalle</Text>
-        <View className="w-10" /> 
+        <TouchableOpacity 
+            onPress={() => setModalVisible(true)}
+            className="bg-neon-cyan/10 p-2 rounded-full border border-neon-cyan/20"
+        >
+            <Ionicons name="create-outline" size={24} color="#22d3ee" />
+        </TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} className="px-4">
@@ -187,6 +221,13 @@ export default function AssetDetails() {
         </Animated.View>
 
       </ScrollView>
+
+      <AddAssetModal 
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSave={(data: any) => handleSaveAsset(data)}
+        initialAsset={asset}
+      />
     </ScreenWrapper>
   );
 }

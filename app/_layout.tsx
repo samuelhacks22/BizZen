@@ -17,7 +17,12 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (loaded || error) {
-       SplashScreen.hideAsync();
+      // Garantizar que el splash screen se vea al menos 2 segundos
+      setTimeout(() => {
+        SplashScreen.hideAsync().catch(() => {
+          /* Ignorar errores al ocultar */
+        });
+      }, 2000);
     }
   }, [loaded, error]);
 

@@ -14,27 +14,37 @@ export function GlassCard({ children, style, intensity = 20, tint = 'dark', grad
   return (
     <Animated.View 
       entering={FadeInDown.delay(100).springify()}
-      className={`rounded-2xl overflow-hidden ${className}`}
+      className={`rounded-3xl overflow-hidden ${className}`}
       style={style}
       {...props}
     >
-        {/* Gradient Border Container */}
+        {/* Refined Glass Layer */}
         {gradientBorder ? (
              <LinearGradient
-                colors={['rgba(34, 211, 238, 0.3)', 'rgba(168, 85, 247, 0.3)', 'rgba(34, 211, 238, 0.1)']}
+                colors={['rgba(255, 255, 255, 0.12)', 'rgba(255, 255, 255, 0.04)']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                className="p-[1px] rounded-2xl"
+                className="p-[1px] rounded-3xl"
              >
-                <View className="rounded-2xl overflow-hidden bg-black/40">
-                    <BlurView intensity={intensity} tint={tint} className="p-4">
+                <View className="rounded-3xl overflow-hidden bg-transparent">
+                    <BlurView 
+                        intensity={intensity} 
+                        tint={tint} 
+                        className="p-5"
+                        style={{ borderRadius: 24, overflow: 'hidden', backgroundColor: 'rgba(10, 10, 15, 0.6)' }}
+                    >
                         {children}
                     </BlurView>
                 </View>
              </LinearGradient>
         ) : (
-             <View className="border border-white/10 rounded-2xl overflow-hidden bg-black/40">
-                <BlurView intensity={intensity} tint={tint} className="p-4">
+             <View className="border border-white/10 rounded-3xl overflow-hidden bg-transparent">
+                <BlurView 
+                    intensity={intensity} 
+                    tint={tint} 
+                    className="p-5"
+                    style={{ borderRadius: 24, overflow: 'hidden', backgroundColor: 'rgba(10, 10, 15, 0.6)' }}
+                >
                     {children}
                 </BlurView>
             </View>

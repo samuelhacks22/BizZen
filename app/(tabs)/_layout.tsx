@@ -11,24 +11,30 @@ export default function TabLayout() {
         headerShown: false,
         tabBarStyle: {
           position: 'absolute',
-          bottom: 20,
-          left: 20,
-          right: 20,
-          borderRadius: 30,
-          height: 70,
+          bottom: 24,
+          left: 24,
+          right: 24,
+          borderRadius: 24,
+          height: 64,
           backgroundColor: 'transparent',
           elevation: 0,
           borderTopWidth: 0,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 10 },
+          shadowOpacity: 0.5,
+          shadowRadius: 20,
         },
         tabBarBackground: () => (
           <BlurView 
-            intensity={50} 
+            intensity={60} 
             tint="dark" 
             style={{ 
-              borderRadius: 30, 
+              borderRadius: 24, 
               overflow: 'hidden', 
               flex: 1,
-              backgroundColor: 'rgba(0,0,0,0.5)'
+              backgroundColor: 'rgba(0,0,0,0.6)',
+              borderWidth: 1,
+              borderColor: 'rgba(255,255,255,0.05)',
             }} 
           />
         ),

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, Image, TouchableOpacity } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { GlassCard } from '../../components/GlassCard';
 import { Ionicons } from '@expo/vector-icons';
@@ -57,84 +57,101 @@ export default function Dashboard() {
       >
         <Animated.View 
             entering={FadeInDown.delay(200).springify()}
-            className="pt-6 px-6 pb-6"
+            className="pt-12 px-6 pb-6"
         >
-          <Text className="text-neon-cyan font-bold tracking-widest text-sm uppercase mb-1">BizZen Inventory</Text>
-          <Text className="text-white text-4xl font-black tracking-tight">
-            Resumen<Text className="text-neon-purple">.</Text>
+          <View className="flex-row items-center mb-3">
+            <View className="w-6 h-6 rounded-lg bg-white/5 items-center justify-center border border-white/5 mr-4">
+                <Image 
+                    source={require('../../assets/icon.png')} 
+                    style={{ width: 14, height: 14 }}
+                    resizeMode="contain"
+                />
+            </View>
+            <Text className="text-gray-500 font-black tracking-[4px] text-[8px] uppercase opacity-40">System Control</Text>
+          </View>
+          <Text className="text-white text-5xl font-black tracking-tightest">
+            Control<Text className="text-neon-cyan opacity-40">.</Text>
           </Text>
         </Animated.View>
 
-        {/* Hero Card: Total Value */}
+        {/* Hero Segment */}
         <Animated.View 
             entering={FadeInRight.delay(300).springify()}
-            className="px-4 mb-8"
+            className="px-6 mb-8"
         >
-          <GlassCard intensity={40} className="border-neon-cyan/30">
-            <View className="flex-row items-center mb-4">
-                <View className="p-3 bg-neon-cyan/10 rounded-full mr-4 border border-neon-cyan/20">
-                    <Ionicons name="wallet-outline" size={24} color="#22d3ee" />
+          <GlassCard intensity={30} className="border-white/5 py-10" gradientBorder={true}>
+            <View className="items-center">
+                <Text className="text-gray-500 font-bold uppercase tracking-[4px] text-[8px] mb-4 opacity-40">Valoración Neta</Text>
+                <View className="flex-row items-baseline mb-4">
+                    <Text className="text-white text-xl font-light mr-3 opacity-10">$</Text>
+                    <Text className="text-6xl text-white font-black tracking-tightest">
+                        {stats.totalValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    </Text>
                 </View>
-                <View>
-                    <Text className="text-gray-400 font-medium">Valor Total de Activos</Text>
-                    <Text className="text-xs text-gray-500">Estimado al costo de compra</Text>
+                <View className="bg-white/5 px-4 py-1.5 rounded-2xl border border-white/5">
+                    <Text className="text-gray-500 text-[10px] font-bold tracking-tight opacity-60">Ecosistema Activo</Text>
                 </View>
             </View>
-            <Text className="text-5xl text-white font-black tracking-tighter shadow-neon-cyan">
-                ${stats.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-            </Text>
           </GlassCard>
         </Animated.View>
 
-        {/* Stats Title */}
-        <Animated.View entering={FadeInDown.delay(400)} className="px-6 mb-4">
-            <Text className="text-white font-bold text-xl">Métricas Clave</Text>
-        </Animated.View>
+        {/* Grid Header */}
+        <View className="px-6 mb-4 flex-row justify-between items-center">
+            <Text className="text-white font-black text-lg tracking-tight">Módulos</Text>
+            <TouchableOpacity className="bg-white/5 p-2 rounded-xl">
+                 <Ionicons name="apps-outline" size={14} color="rgba(255,255,255,0.2)" />
+            </TouchableOpacity>
+        </View>
 
-        {/* Stats Grid */}
-        <View className="flex-row flex-wrap px-2">
+        {/* Global Modular Grid */}
+        <View className="flex-row flex-wrap px-4 pb-12">
+          {/* Module 1 */}
           <View className="w-1/2 p-2">
-            <GlassCard intensity={30} className="h-40 justify-between">
-              <View className="bg-blue-500/20 w-10 h-10 rounded-full items-center justify-center">
-                 <Ionicons name="layers-outline" size={24} color="#60a5fa" />
+            <GlassCard intensity={25} className="p-6 h-40 justify-between">
+              <View className="bg-white/5 w-10 h-10 rounded-xl items-center justify-center border border-white/5">
+                 <Ionicons name="layers-outline" size={20} color="rgba(255,255,255,0.4)" />
               </View>
               <View>
-                  <Text className="text-gray-400 text-sm">Total Activos</Text>
-                  <Text className="text-white text-3xl font-bold">{stats.totalAssets}</Text>
-              </View>
-              <View className="absolute top-4 right-4 opacity-50">
-                  <Ionicons name="layers" size={60} color="rgba(255,255,255,0.05)" />
+                  <Text className="text-gray-500 text-[10px] font-bold uppercase tracking-[2px] mb-1 opacity-40">Stock</Text>
+                  <Text className="text-white text-4xl font-black tracking-tightest">{stats.totalAssets}</Text>
               </View>
             </GlassCard>
           </View>
 
+          {/* Module 2 */}
           <View className="w-1/2 p-2">
-            <GlassCard intensity={30} className="h-40 justify-between">
-              <View className="bg-neon-green/20 w-10 h-10 rounded-full items-center justify-center bg-green-500/20">
-                 <Ionicons name="shield-checkmark-outline" size={24} color="#4ade80" />
+            <GlassCard intensity={25} className="p-6 h-40 justify-between">
+              <View className="bg-white/5 w-10 h-10 rounded-xl items-center justify-center border border-white/5">
+                 <Ionicons name="flash-outline" size={20} color="#22d3ee" className="opacity-40" />
               </View>
               <View>
-                  <Text className="text-gray-400 text-sm">Activos Operativos</Text>
-                  <Text className="text-white text-3xl font-bold">{stats.activeCount}</Text>
-              </View>
-               <View className="absolute top-4 right-4 opacity-50">
-                  <Ionicons name="checkmark-circle" size={60} color="rgba(255,255,255,0.05)" />
+                  <Text className="text-gray-500 text-[10px] font-bold uppercase tracking-[2px] mb-1 opacity-40">Health</Text>
+                  <View className="flex-row items-baseline">
+                      <Text className="text-white text-4xl font-black tracking-tightest">{stats.activeCount}</Text>
+                      <Text className="text-neon-cyan text-[10px] font-bold ml-1.5 opacity-20">%</Text>
+                  </View>
               </View>
             </GlassCard>
           </View>
           
+          {/* Module 3 Wide */}
            <View className="w-full p-2">
-            <GlassCard intensity={30} className="flex-row items-center justify-between p-6">
-              <View className="flex-row items-center">
-                  <View className="bg-yellow-500/20 w-12 h-12 rounded-full items-center justify-center mr-4">
-                    <Ionicons name="construct-outline" size={24} color="#fbbf24" />
+            <GlassCard intensity={30} className="flex-row items-center justify-between p-7">
+              <View className="flex-row items-center flex-1">
+                  <View className="bg-white/5 w-14 h-14 rounded-2xl items-center justify-center mr-5 border border-white/5">
+                    <Ionicons name="construct-outline" size={26} color="#fbbf24" className="opacity-40" />
                   </View>
-                  <View>
-                    <Text className="text-gray-400 text-sm">En Mantenimiento</Text>
-                    <Text className="text-white text-2xl font-bold">{stats.repairCount} <Text className="text-base text-gray-500 font-normal">equipos</Text></Text>
+                  <View className="flex-1">
+                    <Text className="text-gray-500 text-[10px] font-bold uppercase tracking-[3px] mb-1 opacity-40">Mantenimiento</Text>
+                    <View className="flex-row items-baseline">
+                        <Text className="text-white text-3xl font-black tracking-tightest">{stats.repairCount}</Text>
+                        <Text className="text-[10px] text-gray-500 font-bold uppercase ml-3 opacity-20">Units</Text>
+                    </View>
                   </View>
               </View>
-              <Ionicons name="chevron-forward" size={24} color="#525252" />
+              <View className="bg-white/5 p-2 rounded-xl">
+                <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.1)" />
+              </View>
             </GlassCard>
           </View>
         </View>

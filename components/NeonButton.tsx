@@ -11,7 +11,7 @@ interface NeonButtonProps extends TouchableOpacityProps {
 
 export function NeonButton({ title, icon, variant = 'primary', className, ...props }: NeonButtonProps) {
   
-  const getGradientColors = () => {
+  const getGradientColors = (): readonly [string, string, ...string[]] => {
     switch (variant) {
       case 'primary': return ['#22d3ee', '#3b82f6']; // Cyan to Blue
       case 'secondary': return ['#a855f7', '#d946ef']; // Purple to Pink

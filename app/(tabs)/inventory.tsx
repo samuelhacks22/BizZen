@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert, TextInput } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Alert, TextInput, Image } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { GlassCard } from '../../components/GlassCard';
 import { Ionicons } from '@expo/vector-icons';
@@ -146,36 +146,39 @@ export default function Inventory() {
   };
 
   const renderItem = ({ item, index }: { item: Asset, index: number }) => (
-    <Animated.View entering={FadeInDown.delay(index * 50).springify()}>
+    <Animated.View entering={FadeInDown.delay(index * 30).springify()}>
       <TouchableOpacity 
           onPress={() => router.push(`/asset/${item.id}`)}
           onLongPress={() => showOptions(item)} 
           activeOpacity={0.9}
+          className="mb-4 mx-6 shadow-2xl"
       >
-          <GlassCard className="mb-4 mx-4" intensity={20}>
-              <View className="flex-row justify-between items-start">
-                  <View className="flex-1 mr-2">
-                      <Text className="text-white text-lg font-bold mb-1">{item.name}</Text>
-                      <View className="flex-row flex-wrap gap-2 mb-2">
-                          <View className="bg-white/10 px-2 py-0.5 rounded-md">
-                              <Text className="text-neon-cyan text-xs font-medium">{item.category}</Text>
+          <GlassCard className="border-white/5 bg-space-900/10" intensity={20}>
+              <View className="flex-row justify-between items-center">
+                  <View className="flex-1 mr-4">
+                      <Text className="text-white text-base font-black tracking-tight mb-2 uppercase">{item.name}</Text>
+                      <View className="flex-row flex-wrap gap-2.5 mb-3">
+                          <View className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
+                              <Text className="text-neon-cyan text-[8px] font-black uppercase tracking-[2px] opacity-80">{item.category}</Text>
                           </View>
-                          <View className="bg-white/10 px-2 py-0.5 rounded-md">
-                              <Text className="text-gray-300 text-xs">{item.asset_tag}</Text>
+                          <View className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
+                              <Text className="text-gray-500 text-[8px] font-black uppercase tracking-[2px]">{item.asset_tag}</Text>
                           </View>
                       </View>
                       
-                       <View className="flex-row items-center mt-1">
-                           <Ionicons name="location-outline" size={14} color="#9ca3af" />
-                           <Text className="text-gray-400 text-xs ml-1">{item.location}</Text>
+                       <View className="flex-row items-center">
+                           <View className="w-1 h-1 rounded-full bg-white/10 mr-2.5" />
+                           <Text className="text-gray-500 text-[9px] font-bold tracking-tight opacity-40">{item.location}</Text>
                        </View>
                   </View>
 
                   <View className="items-end">
-                      <Text className="text-white font-bold text-xl mb-2">${item.cost.toFixed(2)}</Text>
-                      <View className={`px-2 py-1 rounded-lg bg-black/40 border border-white/5 flex-row items-center gap-1`}>
-                           <View className={`w-2 h-2 rounded-full ${getStatusColor(item.status)}`} />
-                           <Text className="text-gray-300 text-xs font-medium">{getStatusText(item.status)}</Text>
+                      <View className="bg-white/5 px-3 py-1.5 rounded-xl border border-white/5 mb-3">
+                        <Text className="text-white font-black text-lg tracking-tightest">${item.cost.toLocaleString('en-US', { minimumFractionDigits: 0 })}</Text>
+                      </View>
+                      <View className={`px-3 py-1.5 rounded-xl bg-black/10 border border-white/5 flex-row items-center gap-2 shadow-sm`}>
+                           <View className={`w-1.5 h-1.5 rounded-full ${getStatusColor(item.status)} opacity-60`} />
+                           <Text className="text-gray-500 text-[7px] font-black uppercase tracking-[2px]">{getStatusText(item.status)}</Text>
                       </View>
                   </View>
               </View>
@@ -188,11 +191,21 @@ export default function Inventory() {
     <ScreenWrapper>
       <ToastNotification ref={toastRef} />
       
-      <View className="pt-6 px-4 pb-4">
-          <View className="flex-row justify-between items-center mb-6">
+      <View className="pt-12 px-8 pb-4">
+          <View className="flex-row justify-between items-center mb-10">
             <View>
-                <Text className="text-neon-purple font-bold tracking-widest text-xs uppercase mb-1">GESTIÓN</Text>
-                <Text className="text-white text-3xl font-black">Mis Activos</Text>
+                <View className="flex-row items-center mb-2">
+                    <View className="w-6 h-6 rounded-lg bg-white/5 items-center justify-center border border-white/10 mr-4 shadow-2xl overflow-hidden">
+                        <Image 
+                            source={require('../../assets/icon.png')} 
+                            style={{ width: 14, height: 14 }}
+                            resizeMode="contain"
+                        />
+                    </View>
+                    <View className="h-[1px] w-6 bg-white/10 mr-4" />
+                    <Text className="text-gray-500 font-bold tracking-[3px] text-[9px] uppercase">ASSET ECOSYSTEM</Text>
+                </View>
+                <Text className="text-white text-5xl font-black tracking-tightest">Inventario<Text className="text-neon-cyan opacity-60">.</Text></Text>
             </View>
             <TouchableOpacity 
                 activeOpacity={0.8}
@@ -200,32 +213,35 @@ export default function Inventory() {
                     setEditingAsset(null);
                     setModalVisible(true);
                 }}
+                className="w-14 h-14 rounded-[20px] bg-space-900/40 items-center justify-center border border-white/10 shadow-2xl"
             >
                 <LinearGradient
-                    colors={['#22d3ee', '#3b82f6']}
-                    className="w-12 h-12 rounded-full items-center justify-center shadow-lg shadow-neon-cyan/50"
-                >
-                    <Ionicons name="add" size={28} color="white" />
-                </LinearGradient>
+                    colors={['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.02)']}
+                    className="absolute w-full h-full rounded-[20px]"
+                />
+                <Ionicons name="add" size={28} color="rgba(255,255,255,0.8)" />
             </TouchableOpacity>
         </View>
 
-        {/* Search Bar */}
-        <GlassCard intensity={30} className="flex-row items-center px-4 py-3 mb-2" gradientBorder={false}>
-            <Ionicons name="search" size={20} color="#22d3ee" />
-            <TextInput 
-                className="flex-1 text-white ml-3 font-medium"
-                placeholder="Buscar activo..."
-                placeholderTextColor="#9ca3af"
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-            />
-            {searchQuery.length > 0 && (
-                <TouchableOpacity onPress={() => setSearchQuery('')}>
-                    <Ionicons name="close-circle" size={20} color="#9ca3af" />
-                </TouchableOpacity>
-            )}
-        </GlassCard>
+        {/* Spatial Search Bar */}
+        <View className="mb-6 relative">
+            <View className="absolute inset-0 bg-white/5 blur-2xl rounded-full opacity-20" />
+            <GlassCard intensity={30} className="flex-row items-center px-6 py-4 border-white/5" gradientBorder={false}>
+                <Ionicons name="search" size={16} color="rgba(255,255,255,0.3)" />
+                <TextInput 
+                    className="flex-1 text-white ml-5 font-bold text-sm tracking-tight"
+                    placeholder="Buscar en el ecosistema..."
+                    placeholderTextColor="rgba(255,255,255,0.2)"
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                />
+                {searchQuery.length > 0 && (
+                    <TouchableOpacity onPress={() => setSearchQuery('')} className="bg-white/5 p-2 rounded-xl">
+                        <Ionicons name="close" size={14} color="rgba(255,255,255,0.5)" />
+                    </TouchableOpacity>
+                )}
+            </GlassCard>
+        </View>
       </View>
 
       <FlatList

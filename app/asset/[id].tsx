@@ -76,9 +76,9 @@ export default function AssetDetails() {
 
   const getStatusText = (status: string) => {
     switch(status) {
-        case 'Active': return 'Operativo';
-        case 'In Repair': return 'En Taller';
-        case 'Disposed': return 'Fuera de Uso';
+        case 'Active': return 'Activo';
+        case 'In Repair': return 'Reparación';
+        case 'Disposed': return 'Baja';
         default: return status;
     }
   };
@@ -147,9 +147,9 @@ export default function AssetDetails() {
                             <Text className="text-gray-400 text-xs font-medium uppercase tracking-tighter">{asset.category}</Text>
                         </View>
                     </View>
-                    <View className={`px-3 py-1 rounded-lg bg-black/40 border border-white/5 flex-row items-center gap-2`}>
+                    <View className={`px-4 py-1.5 rounded-full bg-black/40 border border-white/5 flex-row items-center gap-2`}>
                         <View className={`w-2 h-2 rounded-full ${getStatusColor(asset.status)} shadow-lg shadow-white/50`} />
-                        <Text className="text-white text-xs font-bold">{getStatusText(asset.status)}</Text>
+                        <Text className="text-white text-[10px] font-black uppercase tracking-widest">{getStatusText(asset.status)}</Text>
                     </View>
                 </View>
             </GlassCard>
@@ -200,9 +200,9 @@ export default function AssetDetails() {
                     <Text className="text-white text-5xl font-black tracking-tighter shadow-xl">
                         ${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </Text>
-                    <View className="bg-white/5 rounded-lg p-3 mt-4 flex-row items-center">
+                    <View className="bg-white/5 rounded-2xl p-4 flex-row items-center">
                         <Ionicons name="information-circle-outline" size={18} color="#9ca3af" />
-                        <Text className="text-gray-500 text-[10px] ml-2 flex-1">
+                        <Text className="text-gray-500 text-[10px] ml-3 flex-1">
                             Estimación basada en depreciación lineal a 5 años. El valor real puede variar según el mercado y uso.
                         </Text>
                     </View>

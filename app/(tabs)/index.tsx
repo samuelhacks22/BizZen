@@ -25,10 +25,14 @@ export default function Dashboard() {
       const activeResult = await db.getAllAsync<{ count: number }>('SELECT COUNT(*) as count FROM assets WHERE status = "Active"');
       const repairResult = await db.getAllAsync<{ count: number }>('SELECT COUNT(*) as count FROM assets WHERE status = "In Repair"');
 
+      const healthPercent = countResult[0]?.count > 0 
+        ? Math.round((activeResult[0]?.count / countResult[0]?.count) * 100) 
+        : 0;
+
       setStats({
         totalValue: valueResult[0]?.total || 0,
         totalAssets: countResult[0]?.count || 0,
-        activeCount: activeResult[0]?.count || 0,
+        activeCount: healthPercent,
         repairCount: repairResult[0]?.count || 0
       });
     } catch (e) {
@@ -60,10 +64,10 @@ export default function Dashboard() {
             className="pt-12 px-6 pb-6"
         >
           <View className="flex-row items-center mb-3">
-            <View className="w-6 h-6 rounded-lg bg-white/5 items-center justify-center border border-white/5 mr-4">
+            <View className="w-8 h-8 rounded-xl bg-white/5 items-center justify-center border border-white/5 mr-4 overflow-hidden">
                 <Image 
                     source={require('../../assets/icon.png')} 
-                    style={{ width: 14, height: 14 }}
+                    style={{ width: 18, height: 18 }}
                     resizeMode="contain"
                 />
             </View>
@@ -88,7 +92,7 @@ export default function Dashboard() {
                         {stats.totalValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                     </Text>
                 </View>
-                <View className="bg-white/5 px-4 py-1.5 rounded-2xl border border-white/5">
+                <View className="bg-white/5 px-4 py-1.5 rounded-full border border-white/5">
                     <Text className="text-gray-500 text-[10px] font-bold tracking-tight opacity-60">Ecosistema Activo</Text>
                 </View>
             </View>
@@ -108,8 +112,8 @@ export default function Dashboard() {
           {/* Module 1 */}
           <View className="w-1/2 p-2">
             <GlassCard intensity={25} className="p-6 h-40 justify-between">
-              <View className="bg-white/5 w-10 h-10 rounded-xl items-center justify-center border border-white/5">
-                 <Ionicons name="layers-outline" size={20} color="rgba(255,255,255,0.4)" />
+              <View className="bg-white/5 w-12 h-12 rounded-2xl items-center justify-center border border-white/5">
+                 <Ionicons name="layers-outline" size={24} color="rgba(255,255,255,0.4)" />
               </View>
               <View>
                   <Text className="text-gray-500 text-[10px] font-bold uppercase tracking-[2px] mb-1 opacity-40">Stock</Text>
@@ -121,8 +125,8 @@ export default function Dashboard() {
           {/* Module 2 */}
           <View className="w-1/2 p-2">
             <GlassCard intensity={25} className="p-6 h-40 justify-between">
-              <View className="bg-white/5 w-10 h-10 rounded-xl items-center justify-center border border-white/5">
-                 <Ionicons name="flash-outline" size={20} color="#22d3ee" className="opacity-40" />
+              <View className="bg-white/5 w-12 h-12 rounded-2xl items-center justify-center border border-white/5">
+                 <Ionicons name="flash-outline" size={24} color="#22d3ee" className="opacity-40" />
               </View>
               <View>
                   <Text className="text-gray-500 text-[10px] font-bold uppercase tracking-[2px] mb-1 opacity-40">Health</Text>
@@ -138,7 +142,7 @@ export default function Dashboard() {
            <View className="w-full p-2">
             <GlassCard intensity={30} className="flex-row items-center justify-between p-7">
               <View className="flex-row items-center flex-1">
-                  <View className="bg-white/5 w-14 h-14 rounded-2xl items-center justify-center mr-5 border border-white/5">
+                  <View className="bg-white/5 w-16 h-16 rounded-[32px] items-center justify-center mr-5 border border-white/5">
                     <Ionicons name="construct-outline" size={26} color="#fbbf24" className="opacity-40" />
                   </View>
                   <View className="flex-1">

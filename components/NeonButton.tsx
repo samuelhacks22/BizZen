@@ -38,7 +38,7 @@ export function NeonButton({ title, icon, variant = 'primary', className, ...pro
         colors={getGradientColors()}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
-        className="px-6 py-3 rounded-xl flex-row items-center justify-center"
+        className="px-6 py-3 rounded-full flex-row items-center justify-center"
       >
         {icon && <Ionicons name={icon} size={20} color="white" style={title ? { marginRight: 8 } : {}} />}
         {title && <Text className="text-white font-bold text-base">{title}</Text>}

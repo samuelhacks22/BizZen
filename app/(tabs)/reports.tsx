@@ -68,8 +68,8 @@ export default function Reports() {
         <GlassCard className="mb-5 mx-6" intensity={20}>
             <View className="flex-row justify-between items-center mb-6">
               <View className="flex-row items-center">
-                <View className="w-12 h-12 rounded-2xl bg-white/5 items-center justify-center mr-5 border border-white/5 shadow-2xl">
-                  <Ionicons name="pie-chart-outline" size={24} color="rgba(255,255,255,0.4)" />
+                <View className="w-14 h-14 rounded-3xl bg-white/5 items-center justify-center mr-5 border border-white/5 shadow-2xl">
+                  <Ionicons name="pie-chart-outline" size={26} color="rgba(255,255,255,0.4)" />
                 </View>
                 <View>
                   <Text className="text-white font-bold text-lg tracking-tight uppercase mb-1">{item.category}</Text>
@@ -85,7 +85,7 @@ export default function Reports() {
             </View>
             
             {/* Progress Bar Container */}
-            <View className="h-[4px] bg-white/2 rounded-full overflow-hidden w-full border border-white/2">
+            <View className="h-[6px] bg-white/2 rounded-full overflow-hidden w-full border border-white/2">
                 <View 
                     className="h-full bg-neon-purple/40 rounded-full"
                     style={{ width: `${percentage}%` }}
@@ -165,8 +165,12 @@ export default function Reports() {
         contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          <View className="items-center justify-center mt-10">
-              <Text className="text-gray-500">No hay datos suficientes para mostrar.</Text>
+          <View className="items-center justify-center mt-20 opacity-50">
+              <Ionicons name="analytics-outline" size={80} color="#a855f7" />
+              <Text className="text-white text-lg font-bold mt-4">Sin datos analíticos</Text>
+              <Text className="text-gray-400 text-center mt-2 px-10">
+                  Registra activos con costo en el inventario para generar reportes visuales.
+              </Text>
           </View>
         }
       />

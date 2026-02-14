@@ -27,6 +27,7 @@ export default function Inventory() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('All'); // 'All', 'Active', 'In Repair', 'Disposed'
   const [modalVisible, setModalVisible] = useState(false);
   const toastRef = useRef<ToastRef>(null);
 
@@ -50,13 +51,15 @@ export default function Inventory() {
 
   useEffect(() => {
     const lowerText = searchQuery.toLowerCase();
-    const filtered = assets.filter(asset => 
-        asset.name.toLowerCase().includes(lowerText) || 
-        asset.asset_tag?.toLowerCase().includes(lowerText) ||
-        asset.location?.toLowerCase().includes(lowerText)
-    );
+    const filtered = assets.filter(asset => {
+        const matchesSearch = asset.name.toLowerCase().includes(lowerText) || 
+            asset.asset_tag?.toLowerCase().includes(lowerText) ||
+            asset.location?.toLowerCase().includes(lowerText);
+        const matchesFilter = activeFilter === 'All' || asset.status === activeFilter;
+        return matchesSearch && matchesFilter;
+    });
     setFilteredAssets(filtered);
-  }, [searchQuery, assets]);
+  }, [searchQuery, activeFilter, assets]);
 
   const handleSaveAsset = async (assetData: Omit<Asset, 'id'> & { id?: number }) => {
     if (assetData.id) {
@@ -158,10 +161,10 @@ export default function Inventory() {
                   <View className="flex-1 mr-4">
                       <Text className="text-white text-base font-black tracking-tight mb-2 uppercase">{item.name}</Text>
                       <View className="flex-row flex-wrap gap-2.5 mb-3">
-                          <View className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
+                          <View className="bg-white/5 px-3 py-1 rounded-full border border-white/5">
                               <Text className="text-neon-cyan text-[8px] font-black uppercase tracking-[2px] opacity-80">{item.category}</Text>
                           </View>
-                          <View className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
+                          <View className="bg-white/5 px-3 py-1 rounded-full border border-white/5">
                               <Text className="text-gray-500 text-[8px] font-black uppercase tracking-[2px]">{item.asset_tag}</Text>
                           </View>
                       </View>
@@ -213,14 +216,33 @@ export default function Inventory() {
                     setEditingAsset(null);
                     setModalVisible(true);
                 }}
-                className="w-14 h-14 rounded-[20px] bg-space-900/40 items-center justify-center border border-white/10 shadow-2xl"
+                className="w-16 h-16 rounded-[28px] bg-space-900/40 items-center justify-center border border-white/10 shadow-2xl"
             >
                 <LinearGradient
                     colors={['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.02)']}
-                    className="absolute w-full h-full rounded-[20px]"
+                    className="absolute w-full h-full rounded-[28px]"
                 />
-                <Ionicons name="add" size={28} color="rgba(255,255,255,0.8)" />
+                <Ionicons name="add" size={32} color="rgba(255,255,255,0.8)" />
             </TouchableOpacity>
+        </View>
+
+        {/* Status Filter Tabs */}
+        <View className="flex-row gap-2 mb-6">
+            {[
+                { label: 'Todos', value: 'All' },
+                { label: 'Activos', value: 'Active' },
+                { label: 'Reparación', value: 'In Repair' }
+            ].map((f) => (
+                <TouchableOpacity
+                    key={f.value}
+                    onPress={() => setActiveFilter(f.value)}
+                    className={`px-5 py-2.5 rounded-2xl border ${activeFilter === f.value ? 'bg-neon-cyan/10 border-neon-cyan/30' : 'bg-white/5 border-white/5'}`}
+                >
+                    <Text className={`text-[10px] font-black uppercase tracking-widest ${activeFilter === f.value ? 'text-neon-cyan' : 'text-gray-500'}`}>
+                        {f.label}
+                    </Text>
+                </TouchableOpacity>
+            ))}
         </View>
 
         {/* Spatial Search Bar */}

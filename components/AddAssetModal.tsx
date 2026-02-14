@@ -67,7 +67,7 @@ export function AddAssetModal({ visible, onClose, onSave, initialAsset }: AddAss
       name,
       asset_tag: assetTag,
       category: category || 'General',
-      location: location || 'Unassigned',
+      location: location || 'Sin asignar',
       serial_number: serialNumber,
       cost: parseFloat(cost) || 0,
       status
@@ -115,7 +115,7 @@ export function AddAssetModal({ visible, onClose, onSave, initialAsset }: AddAss
                                     {initialAsset ? 'Editar Activo' : 'Registrar Activo'}
                                 </Text>
                             </View>
-                            <TouchableOpacity onPress={onClose} className="bg-white/10 p-2 rounded-full">
+                            <TouchableOpacity onPress={onClose} className="bg-white/10 p-3 rounded-full">
                                 <Ionicons name="close" size={24} color="white" />
                             </TouchableOpacity>
                         </View>
@@ -188,9 +188,9 @@ export function AddAssetModal({ visible, onClose, onSave, initialAsset }: AddAss
                                         key={s.value}
                                         onPress={() => setStatus(s.value)}
                                         activeOpacity={0.7}
-                                        className={`px-4 py-2 rounded-xl flex-row items-center border ${status === s.value ? 'bg-white/10 border-white/30' : 'bg-transparent border-white/5'}`}
+                                        className={`px-5 py-3 rounded-2xl flex-row items-center border ${status === s.value ? 'bg-white/10 border-white/30' : 'bg-transparent border-white/5'}`}
                                     >
-                                        <View className={`w-2 h-2 rounded-full mr-2 ${status === s.value ? s.color : 'bg-gray-600'}`} />
+                                        <View className={`w-2 h-2 rounded-full mr-3 ${status === s.value ? s.color : 'bg-gray-600'}`} />
                                         <Text className={`text-xs font-bold ${status === s.value ? 'text-white' : 'text-gray-500'}`}>{s.label}</Text>
                                     </TouchableOpacity>
                                 ))}

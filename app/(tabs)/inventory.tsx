@@ -9,6 +9,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { ScreenWrapper } from '../../components/ScreenWrapper';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useTycoon } from '../../context/TycoonContext';
 
 type Asset = {
   id: number;
@@ -23,6 +24,7 @@ type Asset = {
 
 export default function Inventory() {
   const db = useSQLiteContext();
+  const { addXP } = useTycoon();
   const router = useRouter();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
@@ -84,7 +86,8 @@ export default function Inventory() {
                 assetData.name, assetData.asset_tag, assetData.category, assetData.location, assetData.serial_number, assetData.cost, assetData.status, new Date().toISOString()
             );
             loadAssets();
-            toastRef.current?.show("¡Activo Registrado!", "success");
+            await addXP(250); // XP gain for new asset
+            toastRef.current?.show("¡Activo Registrado! +250 XP", "success");
         } catch (e) {
             Alert.alert("Error", "Error al agregar activo");
             console.error(e);

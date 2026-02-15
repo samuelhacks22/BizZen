@@ -115,7 +115,7 @@ export default function Reports() {
                     <View className="h-[1px] w-6 bg-white/10 mr-4" />
                     <Text className="text-gray-500 font-bold tracking-[3px] text-[9px] uppercase">DATA ANALYTICS</Text>
                 </View>
-                <Text className="text-white text-5xl font-black tracking-tightest">Reportes<Text className="text-neon-purple opacity-60">.</Text></Text>
+                <Text className="text-white text-5xl font-black tracking-tightest">Strategy<Text className="text-neon-purple opacity-60">.</Text></Text>
             </View>
             <View className="flex-row gap-4">
                 <TouchableOpacity 

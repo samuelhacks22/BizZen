@@ -1,7 +1,7 @@
 import { type SQLiteDatabase } from 'expo-sqlite';
 
 export async function migrateDbIfNeeded(db: SQLiteDatabase) {
-  const DATABASE_VERSION = 3; // Incremented to add more seed data
+  const DATABASE_VERSION = 4; // Incremented for tycoon stats
   
   let { user_version: currentDbVersion } = await db.getFirstAsync<{ user_version: number }>(
     'PRAGMA user_version'
@@ -33,6 +33,15 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
         value TEXT
       );
       
+      CREATE TABLE IF NOT EXISTS tycoon_stats (
+        id INTEGER PRIMARY KEY DEFAULT 1,
+        level INTEGER DEFAULT 1,
+        xp INTEGER DEFAULT 0,
+        total_revenue REAL DEFAULT 0
+      );
+      
+      INSERT INTO tycoon_stats (id, level, xp, total_revenue) VALUES (1, 1, 0, 0);
+
       INSERT INTO assets (name, asset_tag, category, location, cost, status, purchase_date) VALUES 
       ('Dell XPS 15', 'TAG-001', 'Laptops', 'Office 101', 1500.00, 'Active', datetime('now', '-30 days')),
       ('Herman Miller Chair', 'TAG-002', 'Furniture', 'Office 101', 800.00, 'Active', datetime('now', '-60 days')),
@@ -80,5 +89,20 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
     currentDbVersion = 3;
   }
 
+  // Migration from 3 to 4: Tycoon Stats
+  if (currentDbVersion === 3) {
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS tycoon_stats (
+        id INTEGER PRIMARY KEY DEFAULT 1,
+        level INTEGER DEFAULT 1,
+        xp INTEGER DEFAULT 0,
+        total_revenue REAL DEFAULT 0
+      );
+      INSERT OR IGNORE INTO tycoon_stats (id, level, xp, total_revenue) VALUES (1, 1, 0, 0);
+    `);
+    currentDbVersion = 4;
+  }
+
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
+
 }

@@ -6,6 +6,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { ScreenWrapper } from '../../components/ScreenWrapper';
 import { useFocusEffect } from 'expo-router';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
+import { TycoonHeader } from '../../components/TycoonHeader';
+import { XPPopOver } from '../../components/XPPopOver';
+import { useTycoon } from '../../context/TycoonContext';
 
 export default function Dashboard() {
   const db = useSQLiteContext();
@@ -16,6 +19,8 @@ export default function Dashboard() {
     repairCount: 0 
   });
   const [refreshing, setRefreshing] = useState(false);
+  const [showXP, setShowXP] = useState(false);
+  const { addXP } = useTycoon();
 
   const loadData = useCallback(async () => {
     try {
@@ -77,6 +82,8 @@ export default function Dashboard() {
             Control<Text className="text-neon-cyan opacity-40">.</Text>
           </Text>
         </Animated.View>
+
+        <TycoonHeader />
 
         {/* Hero Segment */}
         <Animated.View 
@@ -140,24 +147,31 @@ export default function Dashboard() {
           
           {/* Module 3 Wide */}
            <View className="w-full p-2">
-            <GlassCard intensity={30} className="flex-row items-center justify-between p-7">
+            <GlassCard intensity={30} className="flex-row items-center justify-between p-7 border-neon-cyan/20">
               <View className="flex-row items-center flex-1">
-                  <View className="bg-white/5 w-16 h-16 rounded-[32px] items-center justify-center mr-5 border border-white/5">
-                    <Ionicons name="construct-outline" size={26} color="#fbbf24" className="opacity-40" />
+                  <View className="bg-neon-cyan/10 w-16 h-16 rounded-[32px] items-center justify-center mr-5 border border-neon-cyan/20">
+                    <Ionicons name="cash-outline" size={26} color="#22d3ee" />
                   </View>
                   <View className="flex-1">
-                    <Text className="text-gray-500 text-[10px] font-bold uppercase tracking-[3px] mb-1 opacity-40">Mantenimiento</Text>
+                    <Text className="text-neon-cyan text-[10px] font-bold uppercase tracking-[3px] mb-1 opacity-60">Revenue Mensual</Text>
                     <View className="flex-row items-baseline">
-                        <Text className="text-white text-3xl font-black tracking-tightest">{stats.repairCount}</Text>
-                        <Text className="text-[10px] text-gray-500 font-bold uppercase ml-3 opacity-20">Units</Text>
+                        <Text className="text-white text-3xl font-black tracking-tightest">Recolectar</Text>
                     </View>
                   </View>
               </View>
-              <View className="bg-white/5 p-2 rounded-xl">
-                <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.1)" />
-              </View>
+              <TouchableOpacity 
+                onPress={() => {
+                  addXP(50);
+                  setShowXP(true);
+                }}
+                className="bg-neon-cyan p-4 rounded-2xl shadow-neon shadow-neon-cyan/50"
+              >
+                 <Ionicons name="gift-outline" size={20} color="black" />
+              </TouchableOpacity>
             </GlassCard>
           </View>
+
+          {showXP && <XPPopOver amount={50} onComplete={() => setShowXP(false)} />}
         </View>
 
       </ScrollView>

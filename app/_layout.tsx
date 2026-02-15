@@ -8,6 +8,8 @@ import { StatusBar } from 'expo-status-bar';
 import { SQLiteProvider } from 'expo-sqlite';
 import { migrateDbIfNeeded } from '../db/database';
 
+import { TycoonProvider } from '../context/TycoonContext';
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -28,8 +30,10 @@ export default function RootLayout() {
 
   return (
     <SQLiteProvider databaseName="managex.db" onInit={migrateDbIfNeeded}>
-      <Stack screenOptions={{ headerShown: false }} />
-      <StatusBar style="light" />
+      <TycoonProvider>
+        <Stack screenOptions={{ headerShown: false }} />
+        <StatusBar style="light" />
+      </TycoonProvider>
     </SQLiteProvider>
   );
 }

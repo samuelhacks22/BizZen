@@ -1,7 +1,9 @@
 import React from 'react';
-import { TouchableOpacity, Text, TouchableOpacityProps, View } from 'react-native';
+import { Text, Pressable, TouchableOpacityProps, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 
 interface NeonButtonProps extends TouchableOpacityProps {
   title?: string;
@@ -10,6 +12,7 @@ interface NeonButtonProps extends TouchableOpacityProps {
 }
 
 export function NeonButton({ title, icon, variant = 'primary', className, ...props }: NeonButtonProps) {
+  const scale = useSharedValue(1);
   
   const getGradientColors = (): readonly [string, string, ...string[]] => {
     switch (variant) {
@@ -28,21 +31,33 @@ export function NeonButton({ title, icon, variant = 'primary', className, ...pro
       }
   };
 
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }]
+  }));
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.96);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
   return (
-    <TouchableOpacity 
-        activeOpacity={0.8}
+    <Pressable 
+        onPressIn={handlePressIn}
+        onPressOut={() => scale.value = withSpring(1)}
         className={`shadow-lg ${getShadowColor()} ${className}`}
-        {...props}
+        {...(props as any)}
     >
-      <LinearGradient
-        colors={getGradientColors()}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        className="px-6 py-3 rounded-full flex-row items-center justify-center"
-      >
-        {icon && <Ionicons name={icon} size={20} color="white" style={title ? { marginRight: 8 } : {}} />}
-        {title && <Text className="text-white font-bold text-base">{title}</Text>}
-      </LinearGradient>
-    </TouchableOpacity>
+      <Animated.View style={animatedStyle}>
+        <LinearGradient
+            colors={getGradientColors()}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            className="px-6 py-3 rounded-full flex-row items-center justify-center"
+        >
+            {icon && <Ionicons name={icon} size={20} color="white" style={title ? { marginRight: 8 } : {}} />}
+            {title && <Text className="text-white font-bold text-base">{title}</Text>}
+        </LinearGradient>
+      </Animated.View>
+    </Pressable>
   );
 }

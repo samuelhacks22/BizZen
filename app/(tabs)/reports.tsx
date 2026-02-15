@@ -7,6 +7,8 @@ import { ScreenWrapper } from '../../components/ScreenWrapper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from 'expo-router';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
+import { useTycoon } from '../../context/TycoonContext';
 
 type CategoryStat = {
   category: string;
@@ -17,12 +19,12 @@ type CategoryStat = {
 
 export default function Reports() {
   const db = useSQLiteContext();
+  const { addXP } = useTycoon();
   const [categoryStats, setCategoryStats] = useState<CategoryStat[]>([]);
   const [totalValue, setTotalValue] = useState(0);
 
   const loadStats = useCallback(async () => {
     try {
-      // Get stats by category
       const result = await db.getAllAsync<CategoryStat>(`
         SELECT category, SUM(cost) as totalValue, COUNT(*) as count 
         FROM assets 
@@ -54,6 +56,7 @@ export default function Reports() {
             message: jsonString,
             title: 'Managex Inventory Export'
         });
+        await addXP(500); // 500 XP reward for exporting
     } catch (e) {
         Alert.alert("Error", "Failed to export data");
     }
@@ -119,13 +122,19 @@ export default function Reports() {
             </View>
             <View className="flex-row gap-4">
                 <TouchableOpacity 
-                    onPress={handleExport}
+                    onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                        handleExport();
+                    }}
                     className="bg-white/5 border border-white/10 p-4 rounded-2xl shadow-2xl"
                 >
                     <Ionicons name="share-social-outline" size={18} color="rgba(255,255,255,0.6)" />
                 </TouchableOpacity>
                 <TouchableOpacity 
-                    onPress={loadStats}
+                    onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        loadStats();
+                    }}
                     className="bg-white/5 p-4 rounded-2xl border border-white/10 shadow-2xl"
                 >
                     <Ionicons name="refresh" size={18} color="rgba(255,255,255,0.6)" />
@@ -133,7 +142,7 @@ export default function Reports() {
             </View>
           </View>
 
-          <GlassCard className="mb-8 border-white/5 py-10" intensity={40}>
+          <GlassCard className="mb-8 border-white/5" intensity={40} parallax={true}>
               <View className="items-center">
                   <View className="w-10 h-1 bg-neon-cyan opacity-10 rounded-full mb-6" />
                   <Text className="text-gray-500 font-bold uppercase tracking-[4px] text-[8px] mb-4 opacity-60">Valor Consolidado</Text>

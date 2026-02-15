@@ -104,8 +104,7 @@ export function AddAssetModal({ visible, onClose, onSave, initialAsset }: AddAss
                 entering={SlideInDown.springify().damping(15)}
                 className="w-full max-w-lg"
             >
-                <GlassCard className="p-0 border-neon-cyan/20" intensity={80}>
-                    <View className="p-6">
+                <GlassCard className="border-neon-cyan/20" intensity={80}>
                         <View className="flex-row justify-between items-center mb-6">
                             <View>
                                 <Text className="text-neon-cyan font-bold tracking-widest text-xs uppercase mb-1">
@@ -210,7 +209,6 @@ export function AddAssetModal({ visible, onClose, onSave, initialAsset }: AddAss
                                 <Text className="text-gray-500 font-bold">CANCELAR</Text>
                             </TouchableOpacity>
                         </View>
-                    </View>
                 </GlassCard>
             </Animated.View>
         </Animated.View>

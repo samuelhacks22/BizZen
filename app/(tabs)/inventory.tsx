@@ -10,6 +10,7 @@ import { ScreenWrapper } from '../../components/ScreenWrapper';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useTycoon } from '../../context/TycoonContext';
+import * as Haptics from 'expo-haptics';
 
 type Asset = {
   id: number;
@@ -153,13 +154,15 @@ export default function Inventory() {
 
   const renderItem = ({ item, index }: { item: Asset, index: number }) => (
     <Animated.View entering={FadeInDown.delay(index * 30).springify()}>
-      <TouchableOpacity 
-          onPress={() => router.push(`/asset/${item.id}`)}
-          onLongPress={() => showOptions(item)} 
-          activeOpacity={0.9}
-          className="mb-4 mx-6 shadow-2xl"
-      >
-          <GlassCard className="border-white/5 bg-space-900/10" intensity={20}>
+          <GlassCard 
+            className="border-white/5 bg-space-900/10 mb-4 mx-6" 
+            intensity={20}
+            isPressable={true}
+            onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push(`/asset/${item.id}`);
+            }}
+          >
               <View className="flex-row justify-between items-center">
                   <View className="flex-1 mr-4">
                       <Text className="text-white text-base font-black tracking-tight mb-2 uppercase">{item.name}</Text>
@@ -189,7 +192,6 @@ export default function Inventory() {
                   </View>
               </View>
           </GlassCard>
-      </TouchableOpacity>
     </Animated.View>
   );
 
@@ -216,6 +218,7 @@ export default function Inventory() {
             <TouchableOpacity 
                 activeOpacity={0.8}
                 onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                     setEditingAsset(null);
                     setModalVisible(true);
                 }}
@@ -238,7 +241,10 @@ export default function Inventory() {
             ].map((f) => (
                 <TouchableOpacity
                     key={f.value}
-                    onPress={() => setActiveFilter(f.value)}
+                    onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        setActiveFilter(f.value);
+                    }}
                     className={`px-5 py-2.5 rounded-2xl border ${activeFilter === f.value ? 'bg-neon-cyan/10 border-neon-cyan/30' : 'bg-white/5 border-white/5'}`}
                 >
                     <Text className={`text-[10px] font-black uppercase tracking-widest ${activeFilter === f.value ? 'text-neon-cyan' : 'text-gray-500'}`}>
@@ -251,7 +257,7 @@ export default function Inventory() {
         {/* Spatial Search Bar */}
         <View className="mb-6 relative">
             <View className="absolute inset-0 bg-white/5 blur-2xl rounded-full opacity-20" />
-            <GlassCard intensity={30} className="flex-row items-center px-6 py-4 border-white/5" gradientBorder={false}>
+            <GlassCard intensity={30} className="flex-row items-center border-white/5" gradientBorder={false} parallax={true}>
                 <Ionicons name="search" size={16} color="rgba(255,255,255,0.3)" />
                 <TextInput 
                     className="flex-1 text-white ml-5 font-bold text-sm tracking-tight"

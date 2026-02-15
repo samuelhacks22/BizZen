@@ -34,7 +34,7 @@ export default function AssetDetails() {
   const loadAsset = useCallback(async () => {
     if (id) {
         try {
-            const result = await db.getFirstAsync<Asset>('SELECT * FROM assets WHERE id = ?', id);
+            const result = await db.getFirstAsync<Asset>('SELECT * FROM assets WHERE id = ?', id as string);
             setAsset(result);
         } catch (e) {
             console.error(e);
@@ -107,7 +107,7 @@ export default function AssetDetails() {
                 text: "Eliminar", 
                 style: "destructive", 
                 onPress: async () => {
-                    await db.runAsync('DELETE FROM assets WHERE id = ?', id);
+                    await db.runAsync('DELETE FROM assets WHERE id = ?', id as string);
                     router.back();
                 }
             }
@@ -138,7 +138,7 @@ export default function AssetDetails() {
         
         {/* Header Card */}
         <Animated.View entering={FadeInDown.delay(100).springify()}>
-            <GlassCard className="mb-6 p-6" intensity={40}>
+            <GlassCard className="mb-6" intensity={40}>
                 <View className="flex-row justify-between items-start mb-4">
                     <View className="flex-1">
                         <Text className="text-neon-cyan font-bold tracking-widest text-xs uppercase mb-1">{asset.asset_tag}</Text>
@@ -180,7 +180,7 @@ export default function AssetDetails() {
         {/* Financials & Depreciation */}
         <Animated.View entering={FadeInDown.delay(400).springify()}>
             <Text className="text-white/80 font-bold text-lg mb-4 ml-2">Valoración Económica</Text>
-            <GlassCard className="mb-6 p-6" intensity={30}>
+            <GlassCard className="mb-6" intensity={30}>
                 <View className="flex-row justify-between mb-6 pb-6 border-b border-white/5">
                     <View>
                         <Text className="text-gray-500 text-xs font-black uppercase mb-1">Costo Original</Text>

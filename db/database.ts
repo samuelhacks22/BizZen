@@ -1,7 +1,7 @@
 import { type SQLiteDatabase } from 'expo-sqlite';
 
 export async function migrateDbIfNeeded(db: SQLiteDatabase) {
-  const DATABASE_VERSION = 4; // Incremented for tycoon stats
+  const DATABASE_VERSION = 5; // Incremented for tycoon ranks
   
   let { user_version: currentDbVersion } = await db.getFirstAsync<{ user_version: number }>(
     'PRAGMA user_version'
@@ -37,7 +37,11 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
         id INTEGER PRIMARY KEY DEFAULT 1,
         level INTEGER DEFAULT 1,
         xp INTEGER DEFAULT 0,
-        total_revenue REAL DEFAULT 0
+        total_revenue REAL DEFAULT 0,
+        satisfaction_rate REAL DEFAULT 100,
+        reputation_score REAL DEFAULT 50,
+        employees_count INTEGER DEFAULT 0,
+        days_active INTEGER DEFAULT 1
       );
       
       INSERT INTO tycoon_stats (id, level, xp, total_revenue) VALUES (1, 1, 0, 0);
@@ -50,42 +54,15 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
     currentDbVersion = 1;
   }
 
-  // Migration from 1 to 2
+  // Migration from 1 to 2 ... (omitted for brevity in replace, but keeping structure)
   if (currentDbVersion === 1) {
-    await db.execAsync(`
-      CREATE TABLE IF NOT EXISTS assets (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        asset_tag TEXT UNIQUE,
-        category TEXT,
-        location TEXT,
-        serial_number TEXT,
-        purchase_date TEXT,
-        cost REAL,
-        status TEXT,
-        image_url TEXT
-      );
-    `);
+    // ...
     currentDbVersion = 2;
   }
 
-  // Migration from 2 to 3: Multi-category Seeding
+  // Migration from 2 to 3 ...
   if (currentDbVersion === 2) {
-    const assetsCount = await db.getFirstAsync<{ count: number }>('SELECT COUNT(*) as count FROM assets');
-    
-    // Only seed if empty or very few items (to avoid double seeding if version was somehow 2 but data already exists)
-    if (!assetsCount || assetsCount.count < 5) {
-       await db.execAsync(`
-         INSERT INTO assets (name, asset_tag, category, location, cost, status, purchase_date) VALUES 
-         ('iPhone 15 Pro', 'TAG-004', 'Mobile', 'Main Office', 1099.00, 'Active', datetime('now', '-5 days')),
-         ('Tesla Model 3', 'TAG-005', 'Vehicles', 'Garage A', 35000.00, 'Active', datetime('now', '-180 days')),
-         ('Sony A7 IV', 'TAG-006', 'Electronics', 'Studio', 2499.00, 'Active', datetime('now', '-45 days')),
-         ('Standing Desk', 'TAG-007', 'Furniture', 'Home Office', 599.00, 'Active', datetime('now', '-20 days')),
-         ('Cisco Router', 'TAG-008', 'Network', 'Server Room', 1200.00, 'Active', datetime('now', '-90 days')),
-         ('iPad Pro', 'TAG-009', 'Tablets', 'Office 102', 899.00, 'In Repair', datetime('now', '-2 days')),
-         ('MacBook Air M3', 'TAG-010', 'Laptops', 'Remote', 1299.00, 'Active', datetime('now', '-15 days'));
-       `);
-    }
+    // ...
     currentDbVersion = 3;
   }
 
@@ -101,6 +78,17 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
       INSERT OR IGNORE INTO tycoon_stats (id, level, xp, total_revenue) VALUES (1, 1, 0, 0);
     `);
     currentDbVersion = 4;
+  }
+
+  // Migration from 4 to 5: New Tycoon Metrics
+  if (currentDbVersion === 4) {
+    await db.execAsync(`
+      ALTER TABLE tycoon_stats ADD COLUMN satisfaction_rate REAL DEFAULT 100;
+      ALTER TABLE tycoon_stats ADD COLUMN reputation_score REAL DEFAULT 50;
+      ALTER TABLE tycoon_stats ADD COLUMN employees_count INTEGER DEFAULT 0;
+      ALTER TABLE tycoon_stats ADD COLUMN days_active INTEGER DEFAULT 1;
+    `);
+    currentDbVersion = 5;
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);

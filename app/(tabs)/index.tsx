@@ -5,7 +5,16 @@ import { GlassCard } from '../../components/GlassCard';
 import { Ionicons } from '@expo/vector-icons';
 import { ScreenWrapper } from '../../components/ScreenWrapper';
 import { useFocusEffect } from 'expo-router';
-import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
+import Animated, { 
+  FadeInDown, 
+  FadeInRight, 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withRepeat, 
+  withTiming, 
+  withSequence,
+  Easing 
+} from 'react-native-reanimated';
 import { TycoonHeader } from '../../components/TycoonHeader';
 import { XPPopOver } from '../../components/XPPopOver';
 import { useTycoon } from '../../context/TycoonContext';
@@ -20,7 +29,7 @@ export default function Dashboard() {
   });
   const [refreshing, setRefreshing] = useState(false);
   const [showXP, setShowXP] = useState(false);
-  const { addXP } = useTycoon();
+  const { addXP, addRevenue } = useTycoon();
 
   const loadData = useCallback(async () => {
     try {
@@ -50,6 +59,23 @@ export default function Dashboard() {
       loadData();
     }, [loadData])
   );
+
+  const floatValue = useSharedValue(0);
+
+  useEffect(() => {
+    floatValue.value = withRepeat(
+      withSequence(
+        withTiming(-10, { duration: 2500, easing: Easing.inOut(Easing.sin) }),
+        withTiming(0, { duration: 2500, easing: Easing.inOut(Easing.sin) })
+      ),
+      -1,
+      true
+    );
+  }, []);
+
+  const floatingStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: floatValue.value }]
+  }));
 
 
   const onRefresh = async () => {
@@ -89,8 +115,9 @@ export default function Dashboard() {
         <Animated.View 
             entering={FadeInRight.delay(300).springify()}
             className="px-6 mb-8"
+            style={floatingStyle}
         >
-          <GlassCard intensity={30} className="border-white/5 py-10" gradientBorder={true}>
+          <GlassCard intensity={30} className="border-white/5 py-10" gradientBorder={true} parallax={true}>
             <View className="items-center">
                 <Text className="text-gray-500 font-bold uppercase tracking-[4px] text-[8px] mb-4 opacity-40">Valoración Neta</Text>
                 <View className="flex-row items-baseline mb-4">
@@ -117,61 +144,68 @@ export default function Dashboard() {
         {/* Global Modular Grid */}
         <View className="flex-row flex-wrap px-4 pb-12">
           {/* Module 1 */}
-          <View className="w-1/2 p-2">
-            <GlassCard intensity={25} className="p-6 h-40 justify-between">
-              <View className="bg-white/5 w-12 h-12 rounded-2xl items-center justify-center border border-white/5">
-                 <Ionicons name="layers-outline" size={24} color="rgba(255,255,255,0.4)" />
-              </View>
-              <View>
-                  <Text className="text-gray-500 text-[10px] font-bold uppercase tracking-[2px] mb-1 opacity-40">Stock</Text>
-                  <Text className="text-white text-4xl font-black tracking-tightest">{stats.totalAssets}</Text>
+          <Animated.View entering={FadeInDown.delay(400).springify()} className="w-1/2 p-2">
+            <GlassCard intensity={25} className="h-44" gradientBorder={true} parallax={true}>
+              <View className="h-full justify-between">
+                <View className="bg-neon-cyan/10 w-12 h-12 rounded-2xl items-center justify-center border border-neon-cyan/20">
+                   <Ionicons name="layers-outline" size={24} color="#22d3ee" className="opacity-60" />
+                </View>
+                <View>
+                    <Text className="text-neon-cyan text-[10px] font-bold uppercase tracking-[2px] mb-1 opacity-60">Stock</Text>
+                    <Text className="text-white text-4xl font-black tracking-tightest">{stats.totalAssets}</Text>
+                </View>
               </View>
             </GlassCard>
-          </View>
+          </Animated.View>
 
           {/* Module 2 */}
-          <View className="w-1/2 p-2">
-            <GlassCard intensity={25} className="p-6 h-40 justify-between">
-              <View className="bg-white/5 w-12 h-12 rounded-2xl items-center justify-center border border-white/5">
-                 <Ionicons name="flash-outline" size={24} color="#22d3ee" className="opacity-40" />
-              </View>
-              <View>
-                  <Text className="text-gray-500 text-[10px] font-bold uppercase tracking-[2px] mb-1 opacity-40">Health</Text>
-                  <View className="flex-row items-baseline">
-                      <Text className="text-white text-4xl font-black tracking-tightest">{stats.activeCount}</Text>
-                      <Text className="text-neon-cyan text-[10px] font-bold ml-1.5 opacity-20">%</Text>
-                  </View>
+          <Animated.View entering={FadeInDown.delay(500).springify()} className="w-1/2 p-2">
+            <GlassCard intensity={25} className="h-44" gradientBorder={true} parallax={true}>
+              <View className="h-full justify-between">
+                <View className="bg-neon-cyan/10 w-12 h-12 rounded-2xl items-center justify-center border border-neon-cyan/20">
+                   <Ionicons name="flash-outline" size={24} color="#22d3ee" className="opacity-60" />
+                </View>
+                <View>
+                    <Text className="text-neon-cyan text-[10px] font-bold uppercase tracking-[2px] mb-1 opacity-60">Health</Text>
+                    <View className="flex-row items-baseline">
+                        <Text className="text-white text-4xl font-black tracking-tightest">{stats.activeCount}</Text>
+                        <Text className="text-neon-cyan text-[10px] font-bold ml-1.5 opacity-40">%</Text>
+                    </View>
+                </View>
               </View>
             </GlassCard>
-          </View>
+          </Animated.View>
           
           {/* Module 3 Wide */}
-           <View className="w-full p-2">
-            <GlassCard intensity={30} className="flex-row items-center justify-between p-7 border-neon-cyan/20">
-              <View className="flex-row items-center flex-1">
-                  <View className="bg-neon-cyan/10 w-16 h-16 rounded-[32px] items-center justify-center mr-5 border border-neon-cyan/20">
-                    <Ionicons name="cash-outline" size={26} color="#22d3ee" />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-neon-cyan text-[10px] font-bold uppercase tracking-[3px] mb-1 opacity-60">Revenue Mensual</Text>
-                    <View className="flex-row items-baseline">
-                        <Text className="text-white text-3xl font-black tracking-tightest">Recolectar</Text>
+           <Animated.View entering={FadeInDown.delay(600).springify()} className="w-full p-2">
+            <GlassCard intensity={30} className="border-neon-cyan/20" gradientBorder={true}>
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center flex-1">
+                    <View className="bg-neon-cyan/10 w-16 h-16 rounded-[32px] items-center justify-center mr-5 border border-neon-cyan/20">
+                      <Ionicons name="cash-outline" size={26} color="#22d3ee" />
                     </View>
-                  </View>
+                    <View className="flex-1">
+                      <Text className="text-neon-cyan text-[10px] font-bold uppercase tracking-[3px] mb-1 opacity-60">Revenue Mensual</Text>
+                      <View className="flex-row items-baseline">
+                          <Text className="text-white text-3xl font-black tracking-tightest">Recolectar</Text>
+                      </View>
+                    </View>
+                </View>
+                <TouchableOpacity 
+                  onPress={() => {
+                    addXP(100);
+                    addRevenue(500); // Generate virtual revenue
+                    setShowXP(true);
+                  }}
+                  className="bg-neon-cyan p-4 rounded-2xl shadow-neon shadow-neon-cyan/50"
+                >
+                   <Ionicons name="gift-outline" size={20} color="black" />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity 
-                onPress={() => {
-                  addXP(50);
-                  setShowXP(true);
-                }}
-                className="bg-neon-cyan p-4 rounded-2xl shadow-neon shadow-neon-cyan/50"
-              >
-                 <Ionicons name="gift-outline" size={20} color="black" />
-              </TouchableOpacity>
             </GlassCard>
-          </View>
+          </Animated.View>
 
-          {showXP && <XPPopOver amount={50} onComplete={() => setShowXP(false)} />}
+          {showXP && <XPPopOver amount={100} onComplete={() => setShowXP(false)} />}
         </View>
 
       </ScrollView>

@@ -14,6 +14,7 @@ interface RanksModalProps {
     totalRevenue: number;
 }
 
+// Modal para mostrar los rangos disponibles y el progreso del usuario
 export function RanksModal({ visible, onClose, currentRankTier, totalRevenue }: RanksModalProps) {
     return (
         <Modal
@@ -27,6 +28,7 @@ export function RanksModal({ visible, onClose, currentRankTier, totalRevenue }: 
                     entering={FadeInUp.springify()}
                     className="h-[85%] bg-space-950 rounded-t-[50px] overflow-hidden border-t border-white/10"
                 >
+                    {/* Encabezado del Modal */}
                     <View className="pt-8 px-8 pb-4 flex-row justify-between items-center">
                         <View>
                             <Text className="text-white text-3xl font-black tracking-tightest">Carrera</Text>
@@ -58,8 +60,9 @@ export function RanksModal({ visible, onClose, currentRankTier, totalRevenue }: 
     );
 }
 
+// Componente para mostrar un elemento de rango individual
 function RankItem({ rank, isLocked, isCurrent, totalRevenue }: { rank: RankInfo, isLocked: boolean, isCurrent: boolean, totalRevenue: number }) {
-    // Requirements (Simplified based on previous prompt)
+    // Requisitos (Simplificados basados en la lógica de TycoonContext)
     const requirements = [
         rank.tier === 1 ? '• $1,000 acumulado' : '',
         rank.tier === 2 ? '• $10,000 acumulado' : '',
@@ -69,6 +72,7 @@ function RankItem({ rank, isLocked, isCurrent, totalRevenue }: { rank: RankInfo,
         rank.tier === 6 ? '• Dominio absoluto del mercado' : '',
     ].filter(Boolean);
 
+    // Meta de ingresos para calcular progreso
     const revenueGoal = rank.tier === 1 ? 1000 : 
                         rank.tier === 2 ? 10000 : 
                         rank.tier === 3 ? 100000 : 

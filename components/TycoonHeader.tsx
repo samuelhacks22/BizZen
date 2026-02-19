@@ -17,11 +17,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { RankBadge } from './RankBadge';
 import { RanksModal } from './RanksModal';
 
+// Encabezado del juego que muestra el progreso del usuario
 export function TycoonHeader() {
   const { stats, nextLevelXP, progress, currentRank } = useTycoon();
   const [showRanks, setShowRanks] = useState(false);
   const shimmer = useSharedValue(-1);
 
+  // Animación de brillo para la barra de progreso
   useEffect(() => {
     shimmer.value = withRepeat(
       withTiming(1, { duration: 2000, easing: Easing.linear }),
@@ -34,6 +36,7 @@ export function TycoonHeader() {
     transform: [{ translateX: interpolate(shimmer.value, [-1, 1], [-300, 300]) }]
   }));
 
+  // Animación suave de pulso para el nivel
   const pulseScale = useSharedValue(1);
   useEffect(() => {
       pulseScale.value = withRepeat(
@@ -80,7 +83,7 @@ export function TycoonHeader() {
             <Text className="text-white font-black text-sm">{stats.xp} / {nextLevelXP}</Text>
           </View>
 
-        {/* Progress Bar Container */}
+        {/* Contenedor de Barra de Progreso */}
         <View className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
           <View 
             className="h-full bg-neon-cyan" 

@@ -10,21 +10,25 @@ import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useTycoon } from '../../context/TycoonContext';
 
+// Tipo de dato para estadísticas por categoría
 type CategoryStat = {
-  category: string;
-  totalValue: number;
-  count: number;
-  avgValue?: number;
+  category: string; // Nombre de la categoría
+  totalValue: number; // Valor total en dólares
+  count: number; // Cantidad de activos
+  avgValue?: number; // Valor promedio (opcional)
 };
 
+// Pantalla de Reportes y Análisis
 export default function Reports() {
-  const db = useSQLiteContext();
-  const { addXP } = useTycoon();
-  const [categoryStats, setCategoryStats] = useState<CategoryStat[]>([]);
-  const [totalValue, setTotalValue] = useState(0);
+  const db = useSQLiteContext(); // Hook de base de datos
+  const { addXP } = useTycoon(); // Hook de lógica del juego
+  const [categoryStats, setCategoryStats] = useState<CategoryStat[]>([]); // Estadísticas por categoría
+  const [totalValue, setTotalValue] = useState(0); // Valor total del inventario
 
+  // Cargar estadísticas y agrupar por categoría
   const loadStats = useCallback(async () => {
     try {
+      // Consulta SQL para agrupar activos por categoría y sumar costos
       const result = await db.getAllAsync<CategoryStat>(`
         SELECT category, SUM(cost) as totalValue, COUNT(*) as count 
         FROM assets 
@@ -34,6 +38,7 @@ export default function Reports() {
       `);
       setCategoryStats(result);
 
+      // Calcular el valor total sumando todas las categorías
       const total = result.reduce((acc, curr) => acc + (curr.totalValue || 0), 0);
       setTotalValue(total);
     } catch (e) {
@@ -41,34 +46,40 @@ export default function Reports() {
     }
   }, [db]);
 
+  // Recargar estadísticas al enfocar la pantalla
   useFocusEffect(
     useCallback(() => {
       loadStats();
     }, [loadStats])
   );
 
+  // Función para exportar datos del inventario (JSON)
   const handleExport = async () => {
     try {
         const allAssets = await db.getAllAsync('SELECT * FROM assets');
         const jsonString = JSON.stringify(allAssets, null, 2);
         
+        // Compartir el JSON usando la API nativa de compartir
         await Share.share({
             message: jsonString,
-            title: 'Managex Inventory Export'
+            title: 'Exportación de Inventario Managex'
         });
-        await addXP(500); // 500 XP reward for exporting
+        await addXP(500); // Recompensa de 500 XP por exportar
     } catch (e) {
-        Alert.alert("Error", "Failed to export data");
+        Alert.alert("Error", "Error al exportar datos");
     }
   };
 
 
+  // Renderizar cada fila de estadística (barra de progreso visual)
   const renderItem = ({ item, index }: { item: CategoryStat, index: number }) => {
+    // Calcular porcentaje relativo al total
     const percentage = totalValue > 0 ? (item.totalValue / totalValue) * 100 : 0;
     
     return (
       <Animated.View entering={FadeInDown.delay(index * 40).springify()}>
         <GlassCard className="mb-5 mx-6" intensity={20}>
+            {/* Encabezado de la tarjeta con nombre y total */}
             <View className="flex-row justify-between items-center mb-6">
               <View className="flex-row items-center">
                 <View className="w-14 h-14 rounded-3xl bg-white/5 items-center justify-center mr-5 border border-white/5 shadow-2xl">
@@ -87,7 +98,7 @@ export default function Reports() {
               </View>
             </View>
             
-            {/* Progress Bar Container */}
+            {/* Barra de Progreso Visual */}
             <View className="h-[6px] bg-white/2 rounded-full overflow-hidden w-full border border-white/2">
                 <View 
                     className="h-full bg-neon-purple/40 rounded-full"
@@ -101,6 +112,7 @@ export default function Reports() {
 
   return (
     <ScreenWrapper>
+        {/* Encabezado Principal */}
         <Animated.View 
             entering={FadeInDown.delay(200).springify()}
             className="pt-12 px-8 pb-8"
@@ -116,10 +128,11 @@ export default function Reports() {
                         />
                     </View>
                     <View className="h-[1px] w-6 bg-white/10 mr-4" />
-                    <Text className="text-gray-500 font-bold tracking-[3px] text-[9px] uppercase">DATA ANALYTICS</Text>
+                    <Text className="text-gray-500 font-bold tracking-[3px] text-[9px] uppercase">ANÁLISIS DE DATOS</Text>
                 </View>
-                <Text className="text-white text-5xl font-black tracking-tightest">Strategy<Text className="text-neon-purple opacity-60">.</Text></Text>
+                <Text className="text-white text-5xl font-black tracking-tightest">Estrategia<Text className="text-neon-purple opacity-60">.</Text></Text>
             </View>
+            {/* Botones de Exportar y Recargar */}
             <View className="flex-row gap-4">
                 <TouchableOpacity 
                     onPress={() => {
@@ -142,6 +155,7 @@ export default function Reports() {
             </View>
           </View>
 
+          {/* Tarjeta de Resumen Total */}
           <GlassCard className="mb-8 border-white/5" intensity={40} parallax={true}>
               <View className="items-center">
                   <View className="w-10 h-1 bg-neon-cyan opacity-10 rounded-full mb-6" />
@@ -153,11 +167,12 @@ export default function Reports() {
                     </Text>
                   </View>
                   <View className="bg-white/5 px-4 py-1.5 rounded-full border border-white/5">
-                      <Text className="text-gray-500 text-[8px] font-black uppercase tracking-widest opacity-40">Auditoría Real-Time</Text>
+                      <Text className="text-gray-500 text-[8px] font-black uppercase tracking-widest opacity-40">Auditoría en Tiempo Real</Text>
                   </View>
               </View>
           </GlassCard>
 
+          {/* Separador de Distribución */}
           <View className="px-1 flex-row justify-between items-center mb-6">
               <View className="flex-row items-center">
                 <Ionicons name="pie-chart-outline" size={18} color="rgba(255,255,255,0.4)" />
@@ -167,6 +182,7 @@ export default function Reports() {
           </View>
       </Animated.View>
 
+      {/* Lista de Categorías */}
       <FlatList
         data={categoryStats}
         keyExtractor={item => item.category}
@@ -174,6 +190,7 @@ export default function Reports() {
         contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
+          // Estado Vacío
           <View className="items-center justify-center mt-20 opacity-50">
               <Ionicons name="analytics-outline" size={80} color="#a855f7" />
               <Text className="text-white text-lg font-bold mt-4">Sin datos analíticos</Text>

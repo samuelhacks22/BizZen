@@ -1,23 +1,26 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useSQLiteContext } from 'expo-sqlite';
 
+// Definición de las estadísticas del Magnate (Tycoon)
 interface TycoonStats {
-  level: number;
-  xp: number;
-  totalRevenue: number;
-  satisfaction: number;
-  reputation: number;
-  employees: number;
-  daysActive: number;
+  level: number; // Nivel del jugador
+  xp: number; // Experiencia actual
+  totalRevenue: number; // Ingresos totales acumulados
+  satisfaction: number; // Tasa de satisfacción (0-100)
+  reputation: number; // Puntuación de reputación
+  employees: number; // Cantidad de empleados contratados
+  daysActive: number; // Días activos en el juego/app
 }
 
+// Información sobre los rangos disponibles
 export interface RankInfo {
-    name: string;
-    tier: number;
-    icon: string;
-    description: string;
+    name: string; // Nombre del rango
+    tier: number; // Nivel del rango (1-6)
+    icon: string; // Icono representativo
+    description: string; // Descripción del rango
 }
 
+// Lista de Rangos predefinidos
 export const RANKS: RankInfo[] = [
     { name: 'Emprendedor Novato', tier: 1, icon: 'seed-outline', description: 'Iniciando el imperio' },
     { name: 'Gerente en Crecimiento', tier: 2, icon: 'trending-up-outline', description: 'Optimizando procesos' },
@@ -27,19 +30,23 @@ export const RANKS: RankInfo[] = [
     { name: 'Leyenda del Mercado', tier: 6, icon: 'trophy-outline', description: 'Estatus legendario' },
 ];
 
+// Tipos para el Contexto Tycoon
 interface TycoonContextType {
-  stats: TycoonStats;
-  addXP: (amount: number) => Promise<void>;
-  addRevenue: (amount: number) => Promise<void>;
-  nextLevelXP: number;
-  progress: number;
-  currentRank: RankInfo;
+  stats: TycoonStats; // Estado actual
+  addXP: (amount: number) => Promise<void>; // Función para añadir XP
+  addRevenue: (amount: number) => Promise<void>; // Función para añadir ingresos
+  nextLevelXP: number; // XP necesaria para el siguiente nivel
+  progress: number; // Porcentaje de progreso al siguiente nivel
+  currentRank: RankInfo; // Rango actual del jugador
 }
 
+// Creación del Contexto
 const TycoonContext = createContext<TycoonContextType | undefined>(undefined);
 
+// Proveedor del Contexto Tycoon
 export function TycoonProvider({ children }: { children: React.ReactNode }) {
-  const db = useSQLiteContext();
+  const db = useSQLiteContext(); // Conexión a base de datos para persistencia
+  // Estado inicial de las estadísticas
   const [stats, setStats] = useState<TycoonStats>({ 
     level: 1, 
     xp: 0, 
@@ -50,22 +57,25 @@ export function TycoonProvider({ children }: { children: React.ReactNode }) {
     daysActive: 1
   });
 
-  const nextLevelXP = stats.level * 1000;
+  // Cálculos de progreso y nivel
+  const nextLevelXP = stats.level * 1000; // XP requerida escala con el nivel
   const progress = (stats.xp / nextLevelXP) * 100;
 
+  // Calcular rango basado en ingresos totales
   const calculateRank = (): RankInfo => {
       const { totalRevenue, level } = stats;
-      // Simplification of metrics for rank calculation
-      if (totalRevenue >= 10000000) return RANKS[5];
-      if (totalRevenue >= 1000000) return RANKS[4];
-      if (totalRevenue >= 100000) return RANKS[3];
-      if (totalRevenue >= 10000) return RANKS[2];
-      if (totalRevenue >= 1000) return RANKS[1];
-      return RANKS[0];
+      // Simplificación de métricas para cálculo de rango
+      if (totalRevenue >= 10000000) return RANKS[5]; // Leyenda
+      if (totalRevenue >= 1000000) return RANKS[4]; // Titán
+      if (totalRevenue >= 100000) return RANKS[3]; // Magnate
+      if (totalRevenue >= 10000) return RANKS[2]; // Director
+      if (totalRevenue >= 1000) return RANKS[1]; // Gerente
+      return RANKS[0]; // Emprendedor (Default)
   };
 
   const currentRank = calculateRank();
 
+  // Cargar estadísticas desde la base de datos al iniciar
   const loadStats = useCallback(async () => {
     try {
       const result = await db.getFirstAsync<any>(
@@ -91,13 +101,15 @@ export function TycoonProvider({ children }: { children: React.ReactNode }) {
     loadStats();
   }, [loadStats]);
 
+  // Función para añadir XP y subir de nivel si corresponde
   const addXP = async (amount: number) => {
     let newXP = stats.xp + amount;
     let newLevel = stats.level;
 
+    // Verificar si sube de nivel (bucle while por si sube múltiples niveles)
     while (newXP >= (newLevel * 1000)) {
-      newXP -= (newLevel * 1000);
-      newLevel += 1;
+      newXP -= (newLevel * 1000); // Restar XP consumida por el nivel
+      newLevel += 1; // Incrementar nivel
     }
 
     try {
@@ -111,6 +123,7 @@ export function TycoonProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Función para añadir ingresos
   const addRevenue = async (amount: number) => {
       const newRevenue = stats.totalRevenue + amount;
       try {
@@ -131,6 +144,7 @@ export function TycoonProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Hook personalizado para usar el contexto Tycoon
 export function useTycoon() {
   const context = useContext(TycoonContext);
   if (context === undefined) {

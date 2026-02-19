@@ -1,7 +1,7 @@
 import { type SQLiteDatabase } from 'expo-sqlite';
 
 export async function migrateDbIfNeeded(db: SQLiteDatabase) {
-  const DATABASE_VERSION = 5; // Incremented for tycoon ranks
+  const DATABASE_VERSION = 6; // Incremented for validation feature
   
   let { user_version: currentDbVersion } = await db.getFirstAsync<{ user_version: number }>(
     'PRAGMA user_version'
@@ -89,6 +89,14 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
       ALTER TABLE tycoon_stats ADD COLUMN days_active INTEGER DEFAULT 1;
     `);
     currentDbVersion = 5;
+  }
+
+  // Migration from 5 to 6: Asset Validation
+  if (currentDbVersion === 5) {
+    await db.execAsync(`
+      ALTER TABLE assets ADD COLUMN last_validated TEXT;
+    `);
+    currentDbVersion = 6;
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);

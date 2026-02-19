@@ -16,10 +16,12 @@ interface XPPopOverProps {
   onComplete: () => void;
 }
 
-const PARTICLE_COUNT = 8;
+const PARTICLE_COUNT = 8; // Cantidad de partículas en la explosión
 
+// Componente para mostrar ganancia de XP con animación
 export function XPPopOver({ amount, onComplete }: XPPopOverProps) {
   useEffect(() => {
+    // Autocerrar después de la animación
     const timer = setTimeout(() => {
       onComplete();
     }, 2000);
@@ -28,10 +30,10 @@ export function XPPopOver({ amount, onComplete }: XPPopOverProps) {
 
   return (
     <View className="absolute top-1/2 left-1/2 items-center justify-center z-[1000]">
-      {/* Main XP Text */}
+      {/* Texto Principal de XP */}
       <AnimatedXPText amount={amount} />
       
-      {/* Burst Particles */}
+      {/* Explosión de Partículas */}
       {Array.from({ length: PARTICLE_COUNT }).map((_, i) => (
         <XPParticle key={i} index={i} />
       ))}
@@ -39,17 +41,21 @@ export function XPPopOver({ amount, onComplete }: XPPopOverProps) {
   );
 }
 
+// Texto animado de "+50 XP"
 function AnimatedXPText({ amount }: { amount: number }) {
     const opacity = useSharedValue(0);
     const scale = useSharedValue(0.5);
     const translateY = useSharedValue(0);
 
     useEffect(() => {
+        // Secuencia de opacidad: aparecer -> esperar -> desaparecer
         opacity.value = withSequence(
             withTiming(1, { duration: 200 }),
             withDelay(1200, withTiming(0, { duration: 400 }))
         );
+        // Efecto de rebote al aparecer
         scale.value = withSpring(1.2, { damping: 12 });
+        // Flotar hacia arriba
         translateY.value = withTiming(-80, { duration: 1800, easing: Easing.out(Easing.quad) });
     }, []);
 
@@ -71,7 +77,9 @@ function AnimatedXPText({ amount }: { amount: number }) {
     );
 }
 
+// Partícula individual de la explosión
 function XPParticle({ index }: { index: number }) {
+    // Calcular dirección aleatoria en círculo
     const angle = (index / PARTICLE_COUNT) * Math.PI * 2;
     const distance = 60 + Math.random() * 40;
     const destX = Math.cos(angle) * distance;

@@ -10,6 +10,7 @@ import { AddAssetModal } from '../../components/AddAssetModal';
 import { ToastNotification, ToastRef } from '../../components/ToastNotification';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 
+// Definición del tipo de Activo
 type Asset = {
   id: number;
   name: string;
@@ -20,17 +21,20 @@ type Asset = {
   cost: number;
   status: string;
   purchase_date: string;
+  last_validated?: string | null;
 };
 
+// Pantalla de Detalles del Activo
 export default function AssetDetails() {
-  const { id } = useLocalSearchParams();
-  const db = useSQLiteContext();
+  const { id } = useLocalSearchParams(); // Obtener ID desde los parámetros de navegación
+  const db = useSQLiteContext(); // Hook de base de datos
   const router = useRouter();
-  const [asset, setAsset] = useState<Asset | null>(null);
+  const [asset, setAsset] = useState<Asset | null>(null); // Estado del activo
+  
+  const [modalVisible, setModalVisible] = useState(false); // Estado para controlar visibilidad del modal de edición
+  const toastRef = useRef<ToastRef>(null); // Referencia para notificaciones toast
 
-  const [modalVisible, setModalVisible] = useState(false);
-  const toastRef = useRef<ToastRef>(null);
-
+  // Cargar detalles del activo desde la base de datos
   const loadAsset = useCallback(async () => {
     if (id) {
         try {
@@ -42,12 +46,14 @@ export default function AssetDetails() {
     }
   }, [id, db]);
 
+  // Recargar datos al enfocar la pantalla
   useFocusEffect(
     useCallback(() => {
         loadAsset();
     }, [loadAsset])
   );
 
+  // Mostrar estado de carga si el activo no está listo
   if (!asset) {
     return (
         <ScreenWrapper>
@@ -58,13 +64,16 @@ export default function AssetDetails() {
     );
   }
 
-  // Depreciation Calculation (Straight-line 5 years)
+  // Cálculo de Depreciación (Lineal a 5 años)
   const purchaseDate = new Date(asset.purchase_date);
+  // Calcular la edad del activo en años
   const ageInYears = (new Date().getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
-  const usefulLife = 5;
-  const yearlyDepreciation = asset.cost / usefulLife;
+  const usefulLife = 5; // Vida útil estimada en años
+  const yearlyDepreciation = asset.cost / usefulLife; // Depreciación anual
+  // Calcular valor actual, asegurando que no sea negativo
   const currentValue = Math.max(0, asset.cost - (yearlyDepreciation * ageInYears));
 
+  // Obtener color según el estado
   const getStatusColor = (status: string) => {
       switch(status) {
           case 'Active': return 'bg-green-500';
@@ -74,6 +83,7 @@ export default function AssetDetails() {
       }
   };
 
+  // Obtener texto traducido del estado
   const getStatusText = (status: string) => {
     switch(status) {
         case 'Active': return 'Activo';
@@ -83,6 +93,7 @@ export default function AssetDetails() {
     }
   };
 
+  // Guardar cambios del activo (Edición)
   const handleSaveAsset = async (assetData: Omit<Asset, 'id'> & { id?: number }) => {
     try {
         await db.runAsync(
@@ -97,6 +108,7 @@ export default function AssetDetails() {
     }
   };
 
+  // Manejar eliminación del activo
   const handleDelete = () => {
     Alert.alert(
         "Eliminar Activo", 
@@ -118,6 +130,7 @@ export default function AssetDetails() {
   return (
     <ScreenWrapper>
       <ToastNotification ref={toastRef} />
+      {/* Barra superior de navegación */}
       <View className="pt-6 px-6 flex-row items-center justify-between pb-6">
         <TouchableOpacity 
             onPress={() => router.back()} 
@@ -136,7 +149,7 @@ export default function AssetDetails() {
 
       <ScrollView showsVerticalScrollIndicator={false} className="px-4">
         
-        {/* Header Card */}
+        {/* Tarjeta de Encabezado (Nombre, Etiqueta, Estado) */}
         <Animated.View entering={FadeInDown.delay(100).springify()}>
             <GlassCard className="mb-6" intensity={40}>
                 <View className="flex-row justify-between items-start mb-4">
@@ -155,7 +168,7 @@ export default function AssetDetails() {
             </GlassCard>
         </Animated.View>
 
-        {/* Info Grid */}
+        {/* Cuadrícula de Información (Ubicación, Serie) */}
         <View className="flex-row gap-4 mb-6">
             <Animated.View entering={FadeInRight.delay(200).springify()} className="flex-1">
                 <GlassCard className="p-4 items-center" intensity={20}>
@@ -177,7 +190,31 @@ export default function AssetDetails() {
             </Animated.View>
         </View>
 
-        {/* Financials & Depreciation */}
+        {/* Información de Validación */}
+        <Animated.View entering={FadeInRight.delay(350).springify()} className="mb-6">
+            <GlassCard className="p-4 flex-row items-center justify-between" intensity={20}>
+                <View className="flex-row items-center">
+                    <View className={`w-10 h-10 rounded-full items-center justify-center mr-4 ${asset.last_validated ? 'bg-green-500/20' : 'bg-yellow-500/20'}`}>
+                        <Ionicons name={asset.last_validated ? "checkmark-circle" : "alert-circle"} size={20} color={asset.last_validated ? "#4ade80" : "#fbbf24"} />
+                    </View>
+                    <View>
+                        <Text className="text-gray-500 text-[10px] font-black uppercase">Última Validación</Text>
+                        <Text className="text-white font-bold mt-1">
+                            {asset.last_validated 
+                                ? new Date(asset.last_validated).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+                                : 'Nunca validado'}
+                        </Text>
+                    </View>
+                </View>
+                {asset.last_validated && (
+                    <View className="bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">
+                         <Text className="text-green-500 text-[9px] font-black uppercase tracking-wider">Verificado</Text>
+                    </View>
+                )}
+            </GlassCard>
+        </Animated.View>
+
+        {/* Datos Financieros y Depreciación */}
         <Animated.View entering={FadeInDown.delay(400).springify()}>
             <Text className="text-white/80 font-bold text-lg mb-4 ml-2">Valoración Económica</Text>
             <GlassCard className="mb-6" intensity={30}>
@@ -210,7 +247,7 @@ export default function AssetDetails() {
             </GlassCard>
         </Animated.View>
 
-        {/* Actions */}
+        {/* Botones de Acción */}
         <Animated.View entering={FadeInDown.delay(500).springify()} className="pb-10">
             <NeonButton 
                 variant="danger" 
@@ -222,6 +259,7 @@ export default function AssetDetails() {
 
       </ScrollView>
 
+      {/* Modal de Edición */}
       <AddAssetModal 
         visible={modalVisible}
         onClose={() => setModalVisible(false)}

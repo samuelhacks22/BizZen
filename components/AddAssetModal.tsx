@@ -5,6 +5,7 @@ import { NeonButton } from './NeonButton';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
 
+// Interfaz para el objeto Activo
 interface Asset {
   id?: number;
   name: string;
@@ -16,14 +17,16 @@ interface Asset {
   status: string;
 }
 
+// Propiedades del Modal de Agregar/Editar Activo
 interface AddAssetModalProps {
-  visible: boolean;
-  onClose: () => void;
-  onSave: (asset: Asset) => void;
-  initialAsset?: Asset | null;
+  visible: boolean; // Visibilidad del modal
+  onClose: () => void; // Función para cerrar
+  onSave: (asset: Asset) => void; // Función para guardar
+  initialAsset?: Asset | null; // Datos iniciales para edición
 }
 
 export function AddAssetModal({ visible, onClose, onSave, initialAsset }: AddAssetModalProps) {
+  // Estados del formulario
   const [name, setName] = useState('');
   const [assetTag, setAssetTag] = useState('');
   const [category, setCategory] = useState('');
@@ -32,6 +35,7 @@ export function AddAssetModal({ visible, onClose, onSave, initialAsset }: AddAss
   const [cost, setCost] = useState('');
   const [status, setStatus] = useState('Active');
 
+  // Cargar datos si es edición, o resetear si es nuevo
   useEffect(() => {
     if (initialAsset) {
         setName(initialAsset.name);
@@ -57,6 +61,7 @@ export function AddAssetModal({ visible, onClose, onSave, initialAsset }: AddAss
   };
 
   const handleSave = () => {
+    // Validaciones básicas
     if (!name || !assetTag || !cost) {
       Alert.alert('Incompleto', 'El Nombre, Tag y Costo son obligatorios.');
       return;
@@ -105,6 +110,7 @@ export function AddAssetModal({ visible, onClose, onSave, initialAsset }: AddAss
                 className="w-full max-w-lg"
             >
                 <GlassCard className="border-neon-cyan/20" intensity={80}>
+                        {/* Encabezado del Modal */}
                         <View className="flex-row justify-between items-center mb-6">
                             <View>
                                 <Text className="text-neon-cyan font-bold tracking-widest text-xs uppercase mb-1">

@@ -9,11 +9,13 @@ interface RankBadgeProps {
     size?: 'small' | 'large';
 }
 
+// Componente para mostrar la insignia de rango
 export function RankBadge({ rank, size = 'small' }: RankBadgeProps) {
     const isLarge = size === 'large';
     
     return (
         <View className="flex-row items-center">
+            {/* Ícono con fondo degradado */}
             <LinearGradient
                 colors={['#22d3ee', '#818cf8']}
                 start={{ x: 0, y: 0 }}
@@ -22,6 +24,7 @@ export function RankBadge({ rank, size = 'small' }: RankBadgeProps) {
             >
                 <Ionicons name={rank.icon as any} size={isLarge ? 24 : 14} color="black" />
             </LinearGradient>
+            
             <View>
                 <Text className={`${isLarge ? "text-white text-xl font-black" : "text-neon-cyan text-[10px] font-black uppercase tracking-[2px]"}`}>
                     {rank.name}

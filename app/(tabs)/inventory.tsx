@@ -21,6 +21,7 @@ type Asset = {
   serial_number: string;
   cost: number;
   status: string; // 'Active', 'In Repair', 'Disposed'
+  last_validated?: string | null;
 };
 
 export default function Inventory() {
@@ -32,6 +33,7 @@ export default function Inventory() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All'); // 'All', 'Active', 'In Repair', 'Disposed'
   const [modalVisible, setModalVisible] = useState(false);
+  const [isValidationMode, setIsValidationMode] = useState(false);
   const toastRef = useRef<ToastRef>(null);
 
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
@@ -106,6 +108,27 @@ export default function Inventory() {
      }
   };
 
+  const handleValidateAsset = async (id: number) => {
+    try {
+        await db.runAsync(
+            'UPDATE assets SET last_validated = ? WHERE id = ?',
+            new Date().toISOString(), id
+        );
+        
+        // Update local state to reflect change immediately without reload
+        setAssets(current => current.map(a => 
+            a.id === id ? { ...a, last_validated: new Date().toISOString() } : a
+        ));
+        
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        toastRef.current?.show("¡Activo Validado!", "success");
+        await addXP(50); // XP for validation
+    } catch (e) {
+        console.error("Validation error", e);
+        Alert.alert("Error", "No se pudo validar el activo");
+    }
+  };
+
   const showOptions = (asset: Asset) => {
     Alert.alert(
         `${asset.name} (${asset.asset_tag})`,
@@ -152,19 +175,42 @@ export default function Inventory() {
       }
   };
 
-  const renderItem = ({ item, index }: { item: Asset, index: number }) => (
+  const renderItem = ({ item, index }: { item: Asset, index: number }) => {
+    const isValidatedRecently = item.last_validated && 
+        (new Date().getTime() - new Date(item.last_validated).getTime()) < (30 * 24 * 60 * 60 * 1000); // 30 days
+
+    return (
     <Animated.View entering={FadeInDown.delay(index * 30).springify()}>
           <GlassCard 
-            className="border-white/5 bg-space-900/10 mb-4 mx-6" 
+            className={`border-white/5 mb-4 mx-6 ${isValidationMode && isValidatedRecently ? 'bg-green-500/10 border-green-500/30' : 'bg-space-900/10'}`} 
             intensity={20}
             isPressable={true}
             onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push(`/asset/${item.id}`);
+                if (isValidationMode) {
+                    handleValidateAsset(item.id);
+                } else {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push(`/asset/${item.id}`);
+                }
             }}
           >
               <View className="flex-row justify-between items-center">
                   <View className="flex-1 mr-4">
+                      {isValidationMode && (
+                          <View className="mb-2">
+                              {isValidatedRecently ? (
+                                  <View className="bg-green-500/20 self-start px-2 py-0.5 rounded-full flex-row items-center">
+                                      <Ionicons name="checkmark-circle" size={12} color="#4ade80" />
+                                      <Text className="text-green-400 text-[9px] font-black uppercase tracking-wider ml-1">Validado</Text>
+                                  </View>
+                              ) : (
+                                  <View className="bg-white/10 self-start px-2 py-0.5 rounded-full flex-row items-center">
+                                      <Ionicons name="alert-circle-outline" size={12} color="#fbbf24" />
+                                      <Text className="text-yellow-400 text-[9px] font-black uppercase tracking-wider ml-1">Pendiente</Text>
+                                  </View>
+                              )}
+                          </View>
+                      )}
                       <Text className="text-white text-base font-black tracking-tight mb-2 uppercase">{item.name}</Text>
                       <View className="flex-row flex-wrap gap-2.5 mb-3">
                           <View className="bg-white/5 px-3 py-1 rounded-full border border-white/5">
@@ -193,7 +239,7 @@ export default function Inventory() {
               </View>
           </GlassCard>
     </Animated.View>
-  );
+  );};
 
   return (
     <ScreenWrapper>
@@ -211,25 +257,38 @@ export default function Inventory() {
                         />
                     </View>
                     <View className="h-[1px] w-6 bg-white/10 mr-4" />
-                    <Text className="text-gray-500 font-bold tracking-[3px] text-[9px] uppercase">ASSET ECOSYSTEM</Text>
+                    <Text className="text-gray-500 font-bold tracking-[3px] text-[9px] uppercase">ECOSISTEMA DE ACTIVOS</Text>
                 </View>
                 <Text className="text-white text-5xl font-black tracking-tightest">Inventario<Text className="text-neon-cyan opacity-60">.</Text></Text>
             </View>
-            <TouchableOpacity 
-                activeOpacity={0.8}
-                onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                    setEditingAsset(null);
-                    setModalVisible(true);
-                }}
-                className="w-16 h-16 rounded-[28px] bg-space-900/40 items-center justify-center border border-white/10 shadow-2xl"
-            >
-                <LinearGradient
-                    colors={['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.02)']}
-                    className="absolute w-full h-full rounded-[28px]"
-                />
-                <Ionicons name="add" size={32} color="rgba(255,255,255,0.8)" />
-            </TouchableOpacity>
+            <View className="flex-row gap-2">
+                 <TouchableOpacity 
+                    activeOpacity={0.8}
+                    onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        setIsValidationMode(!isValidationMode);
+                    }}
+                    className={`h-16 px-4 rounded-[24px] items-center justify-center border ${isValidationMode ? 'bg-neon-cyan/20 border-neon-cyan/50' : 'bg-space-900/40 border-white/10'}`}
+                >
+                    <Ionicons name={isValidationMode ? "checkmark-circle" : "scan-circle-outline"} size={26} color={isValidationMode ? "#22d3ee" : "rgba(255,255,255,0.6)"} />
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                    activeOpacity={0.8}
+                    onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                        setEditingAsset(null);
+                        setModalVisible(true);
+                    }}
+                    className="w-16 h-16 rounded-[28px] bg-space-900/40 items-center justify-center border border-white/10 shadow-2xl"
+                >
+                    <LinearGradient
+                        colors={['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.02)']}
+                        className="absolute w-full h-full rounded-[28px]"
+                    />
+                    <Ionicons name="add" size={32} color="rgba(255,255,255,0.8)" />
+                </TouchableOpacity>
+            </View>
         </View>
 
         {/* Status Filter Tabs */}

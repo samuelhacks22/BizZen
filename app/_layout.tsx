@@ -9,6 +9,7 @@ import { SQLiteProvider } from 'expo-sqlite';
 import { migrateDbIfNeeded } from '../db/database';
 
 import { TycoonProvider } from '../context/TycoonContext';
+import { AuthProvider } from '../context/AuthContext';
 
 // Prevenir que la pantalla de carga (splash screen) se oculte automáticamente
 SplashScreen.preventAutoHideAsync();
@@ -41,13 +42,16 @@ export default function RootLayout() {
     // Proveedor de SQLite para la base de datos "managex.db"
     // 'onInit' ejecuta la migración de la base de datos si es necesario
     <SQLiteProvider databaseName="managex.db" onInit={migrateDbIfNeeded}>
-      {/* Proveedor del contexto Tycoon (lógica del juego) */}
-      <TycoonProvider>
-        {/* Navegación por Stack (pila) sin cabeceras predeterminadas */}
-        <Stack screenOptions={{ headerShown: false }} />
-        {/* Barra de estado con estilo claro (texto blanco) */}
-        <StatusBar style="light" />
-      </TycoonProvider>
+      {/* Proveedor de Autenticación */}
+      <AuthProvider>
+        {/* Proveedor del contexto Tycoon (lógica del juego) */}
+        <TycoonProvider>
+          {/* Navegación por Stack (pila) sin cabeceras predeterminadas */}
+          <Stack screenOptions={{ headerShown: false }} />
+          {/* Barra de estado con estilo claro (texto blanco) */}
+          <StatusBar style="light" />
+        </TycoonProvider>
+      </AuthProvider>
     </SQLiteProvider>
   );
 }

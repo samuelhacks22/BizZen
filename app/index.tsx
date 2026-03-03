@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Link } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GlassCard } from '../components/GlassCard';
 import { NeonButton } from '../components/NeonButton';
 import { ParticleBackground } from '../components/ParticleBackground';
+import { useAuth } from '../context/AuthContext';
 import Animated, { 
     FadeInDown, 
     useSharedValue, 
@@ -35,6 +36,8 @@ export default function Home() {
     opacity: 0.3 + (glow.value - 1) * 0.4, // Opacidad dinámica
     transform: [{ scale: glow.value }], // Escala dinámica
   }));
+
+  const { user, logout } = useAuth();
 
   return (
     // Contenedor principal de pantalla completa con fondo negro
@@ -90,15 +93,26 @@ export default function Home() {
         {/* Contenedor de botones y pie de página */}
         <View className="w-full">
              {/* Enlace para navegar a la pantalla de pestañas (tabs) */}
-             <Link href="/(tabs)" asChild>
+             <Link href={user ? "/(tabs)" : "/login"} asChild>
                 <NeonButton 
-                    title="Panel de Control" 
+                    title={user ? "Panel de Control" : "Iniciar Sesión"} 
                     variant="primary" 
-                    icon="enter-outline"
+                    icon={user ? "enter-outline" : "log-in-outline"}
                     className="w-full"
                 />
             </Link>
             
+            {user && (
+                <TouchableOpacity 
+                    onPress={logout}
+                    className="mt-4 items-center"
+                >
+                    <Text className="text-neon-cyan/60 text-[10px] font-bold uppercase tracking-[2px]">
+                        Cerrar Sesión
+                    </Text>
+                </TouchableOpacity>
+            )}
+
             {/* Espaciador */}
             <View className="h-10" />
             

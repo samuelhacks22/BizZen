@@ -1,7 +1,7 @@
 import { type SQLiteDatabase } from 'expo-sqlite';
 
 export async function migrateDbIfNeeded(db: SQLiteDatabase) {
-  const DATABASE_VERSION = 6; // Incremented for validation feature
+  const DATABASE_VERSION = 7; // Incremented for users table
   
   let { user_version: currentDbVersion } = await db.getFirstAsync<{ user_version: number }>(
     'PRAGMA user_version'
@@ -15,6 +15,14 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
     await db.execAsync(`
       PRAGMA journal_mode = WAL;
       
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL
+      );
+
+      INSERT INTO users (username, password) VALUES ('admin', '1234');
+
       CREATE TABLE IF NOT EXISTS assets (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
@@ -97,6 +105,19 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
       ALTER TABLE assets ADD COLUMN last_validated TEXT;
     `);
     currentDbVersion = 6;
+  }
+
+  // Migration from 6 to 7: Users Table
+  if (currentDbVersion === 6) {
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL
+      );
+      INSERT OR IGNORE INTO users (username, password) VALUES ('admin', '1234');
+    `);
+    currentDbVersion = 7;
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);

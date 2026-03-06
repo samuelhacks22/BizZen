@@ -11,11 +11,11 @@ interface RanksModalProps {
     visible: boolean;
     onClose: () => void;
     currentRankTier: number;
-    totalRevenue: number;
+    netValuation: number;
 }
 
 // Modal para mostrar los rangos disponibles y el progreso del usuario
-export function RanksModal({ visible, onClose, currentRankTier, totalRevenue }: RanksModalProps) {
+export function RanksModal({ visible, onClose, currentRankTier, netValuation }: RanksModalProps) {
     return (
         <Modal
             animationType="fade"
@@ -46,7 +46,7 @@ export function RanksModal({ visible, onClose, currentRankTier, totalRevenue }: 
                                 rank={rank} 
                                 isLocked={rank.tier > currentRankTier}
                                 isCurrent={rank.tier === currentRankTier}
-                                totalRevenue={totalRevenue}
+                                netValuation={netValuation}
                             />
                         ))}
                     </ScrollView>
@@ -61,14 +61,14 @@ export function RanksModal({ visible, onClose, currentRankTier, totalRevenue }: 
 }
 
 // Componente para mostrar un elemento de rango individual
-function RankItem({ rank, isLocked, isCurrent, totalRevenue }: { rank: RankInfo, isLocked: boolean, isCurrent: boolean, totalRevenue: number }) {
-    // Requisitos (Simplificados basados en la lógica de TycoonContext)
+function RankItem({ rank, isLocked, isCurrent, netValuation }: { rank: RankInfo, isLocked: boolean, isCurrent: boolean, netValuation: number }) {
+    // Definimos texto de meta según el rango
     const requirements = [
-        rank.tier === 1 ? '• $1,000 acumulado' : '',
-        rank.tier === 2 ? '• $10,000 acumulado' : '',
-        rank.tier === 3 ? '• $100,000 acumulado' : '',
-        rank.tier === 4 ? '• $1,000,000 acumulado' : '',
-        rank.tier === 5 ? '• $10,000,000 acumulado' : '',
+        rank.tier === 1 ? '• $1,000 valoración neta' : '',
+        rank.tier === 2 ? '• $10,000 valoración neta' : '',
+        rank.tier === 3 ? '• $100,000 valoración neta' : '',
+        rank.tier === 4 ? '• $1,000,000 valoración neta' : '',
+        rank.tier === 5 ? '• $10,000,000 valoración neta' : '',
         rank.tier === 6 ? '• Dominio absoluto del mercado' : '',
     ].filter(Boolean);
 
@@ -79,7 +79,13 @@ function RankItem({ rank, isLocked, isCurrent, totalRevenue }: { rank: RankInfo,
                         rank.tier === 4 ? 1000000 : 
                         rank.tier === 5 ? 10000000 : Infinity;
 
-    const progress = Math.min(100, (totalRevenue / revenueGoal) * 100);
+    // Cálculo de progreso (si no estamos en nivel 6 y no está desbloqueado)
+    let progress = 0;
+    if (!isLocked) {
+        progress = 100;
+    } else if (rank.tier < 6) {
+        progress = Math.min(100, Math.max(0, (netValuation / revenueGoal) * 100));
+    }
 
     return (
         <Animated.View entering={FadeInDown.delay(rank.tier * 100).springify()} className="mb-6">

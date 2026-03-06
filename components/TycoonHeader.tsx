@@ -19,7 +19,7 @@ import { RanksModal } from './RanksModal';
 
 // Encabezado del juego que muestra el progreso del usuario
 export function TycoonHeader() {
-  const { stats, nextLevelXP, progress, currentRank } = useTycoon();
+  const { stats, nextLevelXP, progress, currentRank, netValuation } = useTycoon();
   const [showRanks, setShowRanks] = useState(false);
   const shimmer = useSharedValue(-1);
 
@@ -105,7 +105,7 @@ export function TycoonHeader() {
         visible={showRanks} 
         onClose={() => setShowRanks(false)} 
         currentRankTier={currentRank.tier}
-        totalRevenue={stats.totalRevenue}
+        netValuation={netValuation}
       />
     </Animated.View>
   );

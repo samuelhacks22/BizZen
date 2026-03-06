@@ -10,6 +10,7 @@ interface TycoonStats {
   reputation: number; // Puntuación de reputación
   employees: number; // Cantidad de empleados contratados
   daysActive: number; // Días activos en el juego/app
+  assetValuation: number; // Sum of active and in-repair asset values
 }
 
 // Información sobre los rangos disponibles
@@ -38,6 +39,8 @@ interface TycoonContextType {
   nextLevelXP: number; // XP necesaria para el siguiente nivel
   progress: number; // Porcentaje de progreso al siguiente nivel
   currentRank: RankInfo; // Rango actual del jugador
+  netValuation: number; // Total Revenue + Asset Valuation
+  refreshTycoon: () => Promise<void>; // Refresh specific states like assets from DB
 }
 
 // Creación del Contexto
@@ -54,26 +57,40 @@ export function TycoonProvider({ children }: { children: React.ReactNode }) {
     satisfaction: 100,
     reputation: 50,
     employees: 0,
-    daysActive: 1
+    daysActive: 1,
+    assetValuation: 0
   });
 
   // Cálculos de progreso y nivel
   const nextLevelXP = stats.level * 1000; // XP requerida escala con el nivel
   const progress = (stats.xp / nextLevelXP) * 100;
 
-  // Calcular rango basado en ingresos totales
+  // Calcular Valoración Neta
+  const netValuation = stats.totalRevenue + stats.assetValuation;
+
+  // Calcular rango basado en valoración neta
   const calculateRank = (): RankInfo => {
-      const { totalRevenue, level } = stats;
       // Simplificación de métricas para cálculo de rango
-      if (totalRevenue >= 10000000) return RANKS[5]; // Leyenda
-      if (totalRevenue >= 1000000) return RANKS[4]; // Titán
-      if (totalRevenue >= 100000) return RANKS[3]; // Magnate
-      if (totalRevenue >= 10000) return RANKS[2]; // Director
-      if (totalRevenue >= 1000) return RANKS[1]; // Gerente
+      if (netValuation >= 10000000) return RANKS[5]; // Leyenda
+      if (netValuation >= 1000000) return RANKS[4]; // Titán
+      if (netValuation >= 100000) return RANKS[3]; // Magnate
+      if (netValuation >= 10000) return RANKS[2]; // Director
+      if (netValuation >= 1000) return RANKS[1]; // Gerente
       return RANKS[0]; // Emprendedor (Default)
   };
 
   const currentRank = calculateRank();
+
+  // Función para refrescar datos calculados exteriormente (como los activos)
+  const refreshTycoon = useCallback(async () => {
+    try {
+      const valueResult = await db.getAllAsync<{ total: number }>('SELECT SUM(cost) as total FROM assets WHERE status != "Disposed"');
+      const assetTotal = valueResult[0]?.total || 0;
+      setStats(prev => ({ ...prev, assetValuation: assetTotal }));
+    } catch (e) {
+      console.error('Error refreshing tycoon external val', e);
+    }
+  }, [db]);
 
   // Cargar estadísticas desde la base de datos al iniciar
   const loadStats = useCallback(async () => {
@@ -82,20 +99,22 @@ export function TycoonProvider({ children }: { children: React.ReactNode }) {
         'SELECT * FROM tycoon_stats WHERE id = 1'
       );
       if (result) {
-        setStats({
+        setStats(prev => ({
+          ...prev, // Preserve assetValuation if it's not loaded from tycoon_stats
           level: result.level,
           xp: result.xp,
           totalRevenue: result.total_revenue,
           satisfaction: result.satisfaction_rate,
           reputation: result.reputation_score,
           employees: result.employees_count,
-          daysActive: result.days_active
-        });
+          daysActive: result.days_active,
+        }));
       }
     } catch (e) {
       console.error('Error loading tycoon stats:', e);
     }
-  }, [db]);
+    await refreshTycoon(); // Carga de valoración al iniciar
+  }, [db, refreshTycoon]);
 
   useEffect(() => {
     loadStats();
@@ -138,7 +157,7 @@ export function TycoonProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <TycoonContext.Provider value={{ stats, addXP, addRevenue, nextLevelXP, progress, currentRank }}>
+    <TycoonContext.Provider value={{ stats, addXP, addRevenue, nextLevelXP, progress, currentRank, netValuation, refreshTycoon }}>
       {children}
     </TycoonContext.Provider>
   );

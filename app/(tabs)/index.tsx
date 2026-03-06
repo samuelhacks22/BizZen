@@ -31,7 +31,7 @@ export default function Dashboard() {
   });
   const [refreshing, setRefreshing] = useState(false); // Estado para controlar el refresco manual
   const [showXP, setShowXP] = useState(false); // Estado para mostrar la animación de ganancia de XP
-  const { addXP, addRevenue } = useTycoon(); // Funciones del contexto Tycoon
+  const { addXP, addRevenue, netValuation, refreshTycoon } = useTycoon(); // Funciones del contexto Tycoon
 
   // Función para cargar datos de la base de datos
   const loadData = useCallback(async () => {
@@ -57,6 +57,8 @@ export default function Dashboard() {
         activeCount: healthPercent,
         repairCount: repairResult[0]?.count || 0
       });
+      // Refrescar el contexto Tycoon (Valoración Neta)
+      await refreshTycoon();
     } catch (e) {
       console.error(e);
     }
@@ -139,7 +141,7 @@ export default function Dashboard() {
                 <View className="flex-row items-baseline mb-4">
                     <Text className="text-white text-xl font-light mr-3 opacity-10">$</Text>
                     <Text className="text-6xl text-white font-black tracking-tightest">
-                        {stats.totalValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        {netValuation.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                     </Text>
                 </View>
                 <View className="bg-white/5 px-4 py-1.5 rounded-full border border-white/5">

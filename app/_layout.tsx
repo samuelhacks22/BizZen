@@ -24,12 +24,9 @@ export default function RootLayout() {
   // Efecto para manejar la ocultación de la pantalla de carga
   useEffect(() => {
     if (loaded || error) {
-      // Garantizar que el splash screen se vea al menos 2 segundos para mejor experiencia
-      setTimeout(() => {
-        SplashScreen.hideAsync().catch(() => {
-          /* Ignorar errores al ocultar si ya está oculto */
-        });
-      }, 2000);
+      SplashScreen.hideAsync().catch(() => {
+        /* Ignorar errores al ocultar si ya está oculto */
+      });
     }
   }, [loaded, error]);
 

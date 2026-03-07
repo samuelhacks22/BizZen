@@ -26,6 +26,10 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "experiments": {
+      "tsconfigPaths": true,
+      "typedRoutes": true
+    },
     "plugins": [
       "expo-router",
       "expo-sqlite"

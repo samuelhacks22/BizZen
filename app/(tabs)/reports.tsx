@@ -21,7 +21,7 @@ type CategoryStat = {
 // Pantalla de Reportes y Análisis
 export default function Reports() {
   const db = useSQLiteContext(); // Hook de base de datos
-  const { addXP } = useTycoon(); // Hook de lógica del juego
+  const { addXP, unlockAchievement } = useTycoon(); // Hook de lógica del juego
   const [categoryStats, setCategoryStats] = useState<CategoryStat[]>([]); // Estadísticas por categoría
   const [totalValue, setTotalValue] = useState(0); // Valor total del inventario
 
@@ -65,6 +65,7 @@ export default function Reports() {
             title: 'Exportación de Inventario Managex'
         });
         await addXP(500); // Recompensa de 500 XP por exportar
+        await unlockAchievement('EXPORT_DATA');
     } catch (e) {
         Alert.alert("Error", "Error al exportar datos");
     }

@@ -37,7 +37,7 @@ export default function Home() {
     transform: [{ scale: glow.value }], // Escala dinámica
   }));
 
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   return (
     // Contenedor principal de pantalla completa con fondo negro
@@ -102,16 +102,7 @@ export default function Home() {
                 />
             </Link>
             
-            {user && (
-                <TouchableOpacity 
-                    onPress={logout}
-                    className="mt-4 items-center"
-                >
-                    <Text className="text-neon-cyan/60 text-[10px] font-bold uppercase tracking-[2px]">
-                        Cerrar Sesión
-                    </Text>
-                </TouchableOpacity>
-            )}
+
 
             {/* Espaciador */}
             <View className="h-10" />

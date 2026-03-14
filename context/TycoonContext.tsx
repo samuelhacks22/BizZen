@@ -11,6 +11,7 @@ interface TycoonStats {
   employees: number; // Cantidad de empleados contratados
   daysActive: number; // Días activos en el juego/app
   assetValuation: number; // Sum of active and in-repair asset values
+  unlockedAchievements: string[]; // Logros desbloqueados
 }
 
 // Información sobre los rangos disponibles
@@ -31,6 +32,22 @@ export const RANKS: RankInfo[] = [
     { name: 'Leyenda del Mercado', tier: 6, icon: 'trophy-outline', description: 'Estatus legendario' },
 ];
 
+// Tipos de logros y definición
+export interface AchievementInfo {
+    id: string; // ID único
+    title: string;
+    description: string;
+    icon: string;
+    xpReward: number;
+}
+
+export const ACHIEVEMENTS: AchievementInfo[] = [
+    { id: 'FIRST_ASSET', title: 'Primera Piedra', description: 'Registra tu primer activo en el ecosistema.', icon: 'cube-outline', xpReward: 500 },
+    { id: 'NET_VAL_1M', title: 'Millionario', description: 'Alcanza $1,000,000 en valoración neta.', icon: 'cash-outline', xpReward: 2000 },
+    { id: 'REACH_LEVEL_5', title: 'Magnate en Ascenso', description: 'Alcanza el nivel Tycoon 5.', icon: 'trending-up-outline', xpReward: 1000 },
+    { id: 'EXPORT_DATA', title: 'Analista de Datos', description: 'Exporta tu primer reporte de inventario.', icon: 'stats-chart-outline', xpReward: 500 },
+];
+
 // Tipos para el Contexto Tycoon
 interface TycoonContextType {
   stats: TycoonStats; // Estado actual
@@ -41,6 +58,7 @@ interface TycoonContextType {
   currentRank: RankInfo; // Rango actual del jugador
   netValuation: number; // Total Revenue + Asset Valuation
   refreshTycoon: () => Promise<void>; // Refresh specific states like assets from DB
+  unlockAchievement: (achievementId: string) => Promise<void>; // Función para desbloquear un logro
 }
 
 // Creación del Contexto
@@ -58,7 +76,8 @@ export function TycoonProvider({ children }: { children: React.ReactNode }) {
     reputation: 50,
     employees: 0,
     daysActive: 1,
-    assetValuation: 0
+    assetValuation: 0,
+    unlockedAchievements: []
   });
 
   // Cálculos de progreso y nivel
@@ -108,6 +127,7 @@ export function TycoonProvider({ children }: { children: React.ReactNode }) {
           reputation: result.reputation_score,
           employees: result.employees_count,
           daysActive: result.days_active,
+          unlockedAchievements: result.unlocked_achievements ? JSON.parse(result.unlocked_achievements) : []
         }));
       }
     } catch (e) {
@@ -119,6 +139,12 @@ export function TycoonProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     loadStats();
   }, [loadStats]);
+
+  // Chequear logros automáticos
+  useEffect(() => {
+     if (stats.level >= 5) unlockAchievement('REACH_LEVEL_5');
+     if (netValuation >= 1000000) unlockAchievement('NET_VAL_1M');
+  }, [stats.level, netValuation]);
 
   // Función para añadir XP y subir de nivel si corresponde
   const addXP = async (amount: number) => {
@@ -156,8 +182,32 @@ export function TycoonProvider({ children }: { children: React.ReactNode }) {
       }
   };
 
+  // Función para desbloquear un logro
+  const unlockAchievement = async (achievementId: string) => {
+      if (stats.unlockedAchievements.includes(achievementId)) return;
+
+      const achievement = ACHIEVEMENTS.find(a => a.id === achievementId);
+      if (!achievement) return;
+
+      const newAchievements = [...stats.unlockedAchievements, achievementId];
+      try {
+          await db.runAsync(
+              'UPDATE tycoon_stats SET unlocked_achievements = ? WHERE id = 1',
+              [JSON.stringify(newAchievements)]
+          );
+          setStats(prev => ({ ...prev, unlockedAchievements: newAchievements }));
+          
+          // Recompensar XP por el logro
+          await addXP(achievement.xpReward);
+          
+          // Podríamos mostrar una notificación aquí o desde donde se llame.
+      } catch (e) {
+          console.error("Error unlocking achievement", e);
+      }
+  };
+
   return (
-    <TycoonContext.Provider value={{ stats, addXP, addRevenue, nextLevelXP, progress, currentRank, netValuation, refreshTycoon }}>
+    <TycoonContext.Provider value={{ stats, addXP, addRevenue, nextLevelXP, progress, currentRank, netValuation, refreshTycoon, unlockAchievement }}>
       {children}
     </TycoonContext.Provider>
   );

@@ -26,7 +26,7 @@ type Asset = {
 
 export default function Inventory() {
   const db = useSQLiteContext();
-  const { addXP } = useTycoon();
+  const { addXP, unlockAchievement } = useTycoon();
   const router = useRouter();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
@@ -90,6 +90,7 @@ export default function Inventory() {
             );
             loadAssets();
             await addXP(250); // XP gain for new asset
+            await unlockAchievement('FIRST_ASSET');
             toastRef.current?.show("¡Activo Registrado! +250 XP", "success");
         } catch (e) {
             Alert.alert("Error", "Error al agregar activo");

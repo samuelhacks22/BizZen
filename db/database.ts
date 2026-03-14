@@ -1,7 +1,7 @@
 import { type SQLiteDatabase } from 'expo-sqlite';
 
 export async function migrateDbIfNeeded(db: SQLiteDatabase) {
-  const DATABASE_VERSION = 7; // Incremented for users table
+  const DATABASE_VERSION = 8; // Incremented for achievements column
   
   let { user_version: currentDbVersion } = await db.getFirstAsync<{ user_version: number }>(
     'PRAGMA user_version'
@@ -49,7 +49,8 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
         satisfaction_rate REAL DEFAULT 100,
         reputation_score REAL DEFAULT 50,
         employees_count INTEGER DEFAULT 0,
-        days_active INTEGER DEFAULT 1
+        days_active INTEGER DEFAULT 1,
+        unlocked_achievements TEXT DEFAULT '[]'
       );
       
       INSERT INTO tycoon_stats (id, level, xp, total_revenue) VALUES (1, 1, 0, 0);
@@ -118,6 +119,14 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
       INSERT OR IGNORE INTO users (username, password) VALUES ('admin', '1234');
     `);
     currentDbVersion = 7;
+  }
+
+  // Migration from 7 to 8: Achievements
+  if (currentDbVersion === 7) {
+    await db.execAsync(`
+      ALTER TABLE tycoon_stats ADD COLUMN unlocked_achievements TEXT DEFAULT '[]';
+    `);
+    currentDbVersion = 8;
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);

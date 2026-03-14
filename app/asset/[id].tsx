@@ -72,6 +72,8 @@ export default function AssetDetails() {
   const yearlyDepreciation = asset.cost / usefulLife; // Depreciación anual
   // Calcular valor actual, asegurando que no sea negativo
   const currentValue = Math.max(0, asset.cost - (yearlyDepreciation * ageInYears));
+  // Calcular porcentaje de depreciación
+  const depreciationPercentage = Math.min(100, Math.max(0, (1 - (currentValue / asset.cost)) * 100));
 
   // Obtener color según el estado
   const getStatusColor = (status: string) => {
@@ -230,16 +232,28 @@ export default function AssetDetails() {
                 </View>
                 
                 <View>
-                    <View className="flex-row items-center mb-2">
-                        <Ionicons name="trending-up" size={16} color="#4ade80" className="mr-1" />
-                        <Text className="text-green-500 text-xs font-black uppercase">Valor Actual Proyectado</Text>
+                    <View className="flex-row items-center mb-2 justify-between">
+                        <View className="flex-row items-center">
+                            <Ionicons name={currentValue < asset.cost ? "trending-down" : "trending-up"} size={16} color={currentValue < asset.cost ? "#f87171" : "#4ade80"} className="mr-1" />
+                            <Text className={`text-xs font-black uppercase ${currentValue < asset.cost ? 'text-red-400' : 'text-green-500'}`}>Valor Actual Proyectado</Text>
+                        </View>
+                        <Text className="text-gray-500 text-[10px] font-bold">-{depreciationPercentage.toFixed(0)}%</Text>
                     </View>
                     <Text className="text-white text-5xl font-black tracking-tighter shadow-xl">
                         ${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </Text>
-                    <View className="bg-white/5 rounded-2xl p-4 flex-row items-center">
+                    
+                    {/* Barra de Depreciación */}
+                    <View className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden mt-4 mb-5 border border-white/5">
+                        <View 
+                            className="h-full bg-red-500/80 rounded-full" 
+                            style={{ width: `${depreciationPercentage}%` }}
+                        />
+                    </View>
+
+                    <View className="bg-white/5 rounded-2xl p-4 flex-row items-center mt-1">
                         <Ionicons name="information-circle-outline" size={18} color="#9ca3af" />
-                        <Text className="text-gray-500 text-[10px] ml-3 flex-1">
+                        <Text className="text-gray-500 text-[10px] ml-3 flex-1 leading-tight">
                             Estimación basada en depreciación lineal a 5 años. El valor real puede variar según el mercado y uso.
                         </Text>
                     </View>

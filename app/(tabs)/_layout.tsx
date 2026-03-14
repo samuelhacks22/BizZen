@@ -67,6 +67,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => <Ionicons name="document-text" size={size} color={color} />,
         }}
       />
+      {/* Pestaña: Perfil */}
+      <Tabs.Screen
+        name="profile"
+        options={{
+          tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
+        }}
+      />
     </Tabs>
   );
 }

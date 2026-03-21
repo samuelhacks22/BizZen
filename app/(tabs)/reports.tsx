@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Share, Alert, Image } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 import { GlassCard } from '../../components/GlassCard';
 import { Ionicons } from '@expo/vector-icons';
 import { ScreenWrapper } from '../../components/ScreenWrapper';
@@ -59,13 +61,24 @@ export default function Reports() {
         const allAssets = await db.getAllAsync('SELECT * FROM assets');
         const jsonString = JSON.stringify(allAssets, null, 2);
         
-        // Compartir el JSON usando la API nativa de compartir
-        await Share.share({
-            message: jsonString,
-            title: 'Exportación de Inventario Managex'
+        // Guardar el JSON en un archivo local
+        const fileUri = FileSystem.documentDirectory + 'inventario.json';
+        await FileSystem.writeAsStringAsync(fileUri, jsonString, {
+            encoding: FileSystem.EncodingType.UTF8
         });
-        await addXP(500); // Recompensa de 500 XP por exportar
-        await unlockAchievement('EXPORT_DATA');
+        
+        // Compartir o descargar el archivo usando expo-sharing
+        if (await Sharing.isAvailableAsync()) {
+            await Sharing.shareAsync(fileUri, {
+                dialogTitle: 'Descargar Inventario',
+                mimeType: 'application/json',
+                UTI: 'public.json'
+            });
+            await addXP(500); // Recompensa de 500 XP por exportar
+            await unlockAchievement('EXPORT_DATA');
+        } else {
+            Alert.alert("Error", "La función de compartir o descargar no está disponible");
+        }
     } catch (e) {
         Alert.alert("Error", "Error al exportar datos");
     }

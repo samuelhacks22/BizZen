@@ -13,9 +13,11 @@
       "backgroundColor": "#0f172a"
     },
     "ios": {
+      "bundleIdentifier": "com.managex.app",
       "supportsTablet": true
     },
     "android": {
+      "package": "com.managex.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"

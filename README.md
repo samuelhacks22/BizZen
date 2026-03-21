@@ -22,7 +22,13 @@ No es solo un juego, es una herramienta real:
 - **Registro de Ventas:** Procesa transacciones rápidamente.
 - **Reportes Financieros:** Gráficos de tendencias de ventas e historial de transacciones.
 
-### 3. Diseño Premium
+### 3. Exportación de Datos
+
+Permite descargar tu información localmente en cualquier momento:
+
+- **Descarga de Reportes:** En la sección "Análisis de Datos", haz clic en el ícono de compartir para guardar tu inventario como un archivo `inventario.json` en tu dispositivo físico, útil para auditorías o copias de seguridad.
+
+### 4. Diseño Premium
 
 Utiliza un diseño futurista con "Glassmorphism" (efecto cristal), modo oscuro, y acentos neón para que la experiencia sea visualmente satisfactoria.
 
@@ -48,3 +54,24 @@ Si encuentras problemas con las dependencias:
 ```bash
 npm install --legacy-peer-deps
 ```
+
+---
+
+## 📦 Descarga y Compilación (Builds)
+
+La aplicación está preconfigurada para generar archivos instalables utilizando **Expo Application Services (EAS)** sin necesidad de entornos locales complejos.
+
+### 🤖 Construir para Android (.apk)
+Genera el instalador directo (APK) que puedes compartir y enviar a cualquier dispositivo Android:
+
+```bash
+npx eas-cli build -p android --profile preview
+```
+
+### 🍏 Construir para iOS (Simulador)
+Genera un archivo `.tar.gz` que puede ser arrastrado sobre un Simulador de iOS en tu Mac, sin requerir cuenta de pago de Apple Developer:
+
+```bash
+npx eas-cli build -p ios --profile preview
+```
+*(Nota: Para instalar en iPhones reales, requerirás una licencia de Apple Developer, registrar PUDID y eliminar el flag `"simulator": true` de tu `eas.json`).*

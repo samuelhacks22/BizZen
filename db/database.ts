@@ -33,7 +33,8 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
         purchase_date TEXT,
         cost REAL,
         status TEXT, -- 'Active', 'In Repair', 'Disposed'
-        image_url TEXT
+        image_url TEXT,
+        last_validated TEXT
       );
 
       CREATE TABLE IF NOT EXISTS settings (
@@ -60,7 +61,7 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
       ('Herman Miller Chair', 'TAG-002', 'Furniture', 'Office 101', 800.00, 'Active', datetime('now', '-60 days')),
       ('Projector 4K', 'TAG-003', 'Electronics', 'Conf Room A', 1200.00, 'In Repair', datetime('now', '-10 days'));
     `);
-    currentDbVersion = 1;
+    currentDbVersion = DATABASE_VERSION;
   }
 
   // Migration from 1 to 2 ... (omitted for brevity in replace, but keeping structure)

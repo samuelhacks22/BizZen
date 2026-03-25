@@ -1,5 +1,6 @@
 import "../global.css"; // Importar estilos globales
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
+import { View, ActivityIndicator } from 'react-native';
 import { Slot, Stack } from "expo-router";
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -38,17 +39,23 @@ export default function RootLayout() {
   return (
     // Proveedor de SQLite para la base de datos "managex.db"
     // 'onInit' ejecuta la migración de la base de datos si es necesario
-    <SQLiteProvider databaseName="managex.db" onInit={migrateDbIfNeeded}>
-      {/* Proveedor de Autenticación */}
-      <AuthProvider>
-        {/* Proveedor del contexto Tycoon (lógica del juego) */}
-        <TycoonProvider>
-          {/* Navegación por Stack (pila) sin cabeceras predeterminadas */}
-          <Stack screenOptions={{ headerShown: false }} />
-          {/* Barra de estado con estilo claro (texto blanco) */}
-          <StatusBar style="light" />
-        </TycoonProvider>
-      </AuthProvider>
-    </SQLiteProvider>
+    <Suspense fallback={
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a' }}>
+        <ActivityIndicator size="large" color="#ffffff" />
+      </View>
+    }>
+      <SQLiteProvider databaseName="managex.db" onInit={migrateDbIfNeeded} useSuspense>
+        {/* Proveedor de Autenticación */}
+        <AuthProvider>
+          {/* Proveedor del contexto Tycoon (lógica del juego) */}
+          <TycoonProvider>
+            {/* Navegación por Stack (pila) sin cabeceras predeterminadas */}
+            <Stack screenOptions={{ headerShown: false }} />
+            {/* Barra de estado con estilo claro (texto blanco) */}
+            <StatusBar style="light" />
+          </TycoonProvider>
+        </AuthProvider>
+      </SQLiteProvider>
+    </Suspense>
   );
 }

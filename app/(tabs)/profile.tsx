@@ -1,4 +1,5 @@
 import React from 'react';
+import { router } from 'expo-router';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { GlassCard } from '../../components/GlassCard';
@@ -129,7 +130,10 @@ export default function Profile() {
                 variant="danger" 
                 title="Cerrar Sesión" 
                 icon="log-out-outline"
-                onPress={logout}
+                onPress={() => {
+                  logout();
+                  router.replace('/login');
+                }}
             />
         </Animated.View>
 

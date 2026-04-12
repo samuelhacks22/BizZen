@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, ViewProps, SafeAreaView, Platform, StatusBar } from 'react-native';
+import { View, ViewProps, Platform, StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ParticleBackground } from './ParticleBackground';
 import Animated, { FadeInDown } from 'react-native-reanimated';

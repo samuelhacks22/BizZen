@@ -59,6 +59,9 @@ interface TycoonContextType {
   netValuation: number; // Total Revenue + Asset Valuation
   refreshTycoon: () => Promise<void>; // Refresh specific states like assets from DB
   unlockAchievement: (achievementId: string) => Promise<void>; // Función para desbloquear un logro
+  lastXPGain: { amount: number; timestamp: number } | null; // Última ganancia de XP para animación
+  toast: { message: string; type: 'success' | 'error' | 'xp'; timestamp: number } | null; // Toast activo
+  showToast: (message: string, type?: 'success' | 'error' | 'xp') => void; // Mostrar toast
 }
 
 // Creación del Contexto
@@ -100,16 +103,46 @@ export function TycoonProvider({ children }: { children: React.ReactNode }) {
 
   const currentRank = calculateRank();
 
-  // Función para refrescar datos calculados exteriormente (como los activos)
+  // Función para refrescar datos calculados exteriormente (como los activos y empleados)
   const refreshTycoon = useCallback(async () => {
     try {
+      // Valoración de activos
       const valueResult = await db.getAllAsync<{ total: number }>('SELECT SUM(cost) as total FROM assets WHERE status != "Disposed"');
       const assetTotal = valueResult[0]?.total || 0;
-      setStats(prev => ({ ...prev, assetValuation: assetTotal }));
+      
+      // Conteo de empleados y nómina total
+      const empResult = await db.getAllAsync<{ count: number, total_salary: number }>('SELECT COUNT(*) as count, SUM(salary) as total_salary FROM employees WHERE status = "Active"');
+      const empCount = empResult[0]?.count || 0;
+      const totalSalary = empResult[0]?.total_salary || 0;
+      
+      // Contar estados de activos para métricas
+      const assetStats = await db.getAllAsync<{ status: string, count: number }>('SELECT status, COUNT(*) as count FROM assets GROUP BY status');
+      const disposedCount = assetStats.find(s => s.status === 'Disposed')?.count || 0;
+      const repairCount = assetStats.find(s => s.status === 'In Repair')?.count || 0;
+
+      // Calcular Satisfacción: Base 100, -5 por cada desechado, -2 por reparación, +2 por empleado (empoderamiento)
+      const newSatisfaction = Math.min(100, Math.max(0, 100 - (disposedCount * 5) - (repairCount * 2) + (empCount * 2)));
+      
+      // Calcular Reputación: Base Nivel * 10, +1 por empleado
+      const newReputation = Math.min(100, (stats.level * 10) + empCount);
+      
+      setStats(prev => ({ 
+        ...prev, 
+        assetValuation: assetTotal, 
+        employees: empCount,
+        satisfaction: newSatisfaction,
+        reputation: newReputation
+      }));
+
+      // Persistir métricas calculadas en la DB para que el dashboard las cargue
+      await db.runAsync(
+          'UPDATE tycoon_stats SET satisfaction_rate = ?, reputation_score = ?, employees_count = ? WHERE id = 1',
+          [newSatisfaction, newReputation, empCount]
+      );
     } catch (e) {
-      console.error('Error refreshing tycoon external val', e);
+      console.error('Error refreshing tycoon external metrics', e);
     }
-  }, [db]);
+  }, [db, stats.level]);
 
   // Cargar estadísticas desde la base de datos al iniciar
   const loadStats = useCallback(async () => {
@@ -146,8 +179,16 @@ export function TycoonProvider({ children }: { children: React.ReactNode }) {
      if (netValuation >= 1000000) unlockAchievement('NET_VAL_1M');
   }, [stats.level, netValuation]);
 
+  const [lastXPGain, setLastXPGain] = useState<{ amount: number; timestamp: number } | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'xp'; timestamp: number } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'xp' = 'success') => {
+    setToast({ message, type, timestamp: Date.now() });
+  };
+
   // Función para añadir XP y subir de nivel si corresponde
   const addXP = async (amount: number) => {
+    setLastXPGain({ amount, timestamp: Date.now() });
     let newXP = stats.xp + amount;
     let newLevel = stats.level;
 
@@ -155,6 +196,7 @@ export function TycoonProvider({ children }: { children: React.ReactNode }) {
     while (newXP >= (newLevel * 1000)) {
       newXP -= (newLevel * 1000); // Restar XP consumida por el nivel
       newLevel += 1; // Incrementar nivel
+      showToast(`¡NIVEL UP! Ahora eres nivel ${newLevel}`, 'xp');
     }
 
     try {
@@ -199,15 +241,27 @@ export function TycoonProvider({ children }: { children: React.ReactNode }) {
           
           // Recompensar XP por el logro
           await addXP(achievement.xpReward);
-          
-          // Podríamos mostrar una notificación aquí o desde donde se llame.
+          showToast(`¡LOGRO! ${achievement.title}`, 'success');
       } catch (e) {
           console.error("Error unlocking achievement", e);
       }
   };
 
   return (
-    <TycoonContext.Provider value={{ stats, addXP, addRevenue, nextLevelXP, progress, currentRank, netValuation, refreshTycoon, unlockAchievement }}>
+    <TycoonContext.Provider value={{ 
+      stats, 
+      addXP, 
+      addRevenue, 
+      nextLevelXP, 
+      progress, 
+      currentRank, 
+      netValuation, 
+      refreshTycoon, 
+      unlockAchievement,
+      lastXPGain,
+      toast,
+      showToast
+    }}>
       {children}
     </TycoonContext.Provider>
   );

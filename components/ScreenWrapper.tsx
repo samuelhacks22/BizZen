@@ -1,47 +1,81 @@
-import React from 'react';
-import { View, ViewProps, Platform, StatusBar } from 'react-native';
+import React, { useRef, useEffect, useState } from 'react';
+import { View, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
-import { ParticleBackground } from './ParticleBackground';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import { ToastNotification, ToastRef } from './ToastNotification';
+import { XPPopOver } from './XPPopOver';
+import { useTycoon } from '../context/TycoonContext';
 
-// Propiedades del Componente ScreenWrapper
-interface ScreenWrapperProps extends ViewProps {
-  children: React.ReactNode; // Contenido hijo
-  showParticles?: boolean; // Opción para mostrar fondo de partículas
+interface ScreenWrapperProps {
+  children: React.ReactNode;
+  bg?: string;
+  showParticles?: boolean;
 }
 
-// Componente Contenedor de Pantalla con fondo degradado y efectos visuales
-export function ScreenWrapper({ children, style, showParticles = true, className, ...props }: ScreenWrapperProps) {
-  return (
-    <View className="flex-1 bg-space-950" {...props}>
-      <StatusBar barStyle="light-content" />
-      
-      {/* Base de Malla Degradada (Mesh Gradient) */}
-      <View className="absolute w-full h-full overflow-hidden">
-        <LinearGradient
-            colors={['#030712', '#0f172a']}
-            className="absolute w-full h-full"
-        />
-        
-        {/* Brillo Ambiental Secundario */}
-        <View className="absolute -top-[10%] -right-[20%] w-[80%] h-[60%] rounded-full bg-neon-purple/10 blur-[100px]" />
-        <View className="absolute top-[40%] -left-[30%] w-[90%] h-[70%] rounded-full bg-neon-cyan/5 blur-[120px]" />
-        
-        {/* Acentos de Malla Dinámicos */}
-        <Animated.View 
-            entering={FadeInDown.delay(300).duration(2000)}
-            className="absolute -bottom-[20%] right-[10%] w-[70%] h-[50%] rounded-full bg-neon-indigo/5 blur-[100px]" 
-        />
-      </View>
+export function ScreenWrapper({ children, bg = '#020617', showParticles = false }: ScreenWrapperProps) {
+  const { toast, lastXPGain } = useTycoon();
+  const toastRef = useRef<ToastRef>(null);
+  const [activeXP, setActiveXP] = useState<{ amount: number; id: number } | null>(null);
 
-      {/* Fondo de Partículas Opcional */}
-      {showParticles && <ParticleBackground />}
-      
-      {/* Área Segura para el contenido */}
-      <SafeAreaView className={`flex-1 ${className}`} style={style}>
-        {children}
+  // Observa cambios en el toast del contexto
+  useEffect(() => {
+    if (toast) {
+      toastRef.current?.show(toast.message, toast.type);
+    }
+  }, [toast?.timestamp]);
+
+  // Observa ganancias de XP para disparar la animación
+  useEffect(() => {
+    if (lastXPGain) {
+      setActiveXP({ amount: lastXPGain.amount, id: lastXPGain.timestamp });
+    }
+  }, [lastXPGain?.timestamp]);
+
+  return (
+    <View style={[styles.container, { backgroundColor: bg }]}>
+      <StatusBar style="light" />
+      <SafeAreaView style={styles.safe} edges={['right', 'left']}>
+        {showParticles && (
+          <View style={StyleSheet.absoluteFill} pointerEvents="none">
+            {/* Partículas decorativas estáticas para profundidad visual */}
+            <View className="absolute top-20 left-10 w-1 h-1 bg-neon-cyan/40 rounded-full" />
+            <View className="absolute top-40 right-20 w-2 h-2 bg-neon-purple/20 rounded-full" />
+            <View className="absolute bottom-60 left-40 w-1.5 h-1.5 bg-neon-indigo/30 rounded-full" />
+            <View className="absolute top-1/2 right-10 w-1 h-1 bg-white/10 rounded-full" />
+            <View className="absolute bottom-20 right-1/4 w-2 h-2 bg-neon-cyan/10 rounded-full" />
+          </View>
+        )}
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboard}
+        >
+          {children}
+        </KeyboardAvoidingView>
       </SafeAreaView>
+      
+      {/* Sistema de Notificaciones Global */}
+      <ToastNotification ref={toastRef} />
+      
+      {/* Animación de Ganancia de XP */}
+      {activeXP && (
+        <XPPopOver 
+            key={activeXP.id}
+            amount={activeXP.amount} 
+            onComplete={() => setActiveXP(null)} 
+        />
+      )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  safe: {
+    flex: 1,
+  },
+  keyboard: {
+    flex: 1,
+  },
+});

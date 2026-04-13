@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, TextInput, TouchableOpacity, Alert, ScrollView, Platform, KeyboardAvoidingView } from 'react-native';
+import { Modal, View, Text, TextInput, TouchableOpacity, Alert, ScrollView, Platform, KeyboardAvoidingView, Keyboard } from 'react-native';
 import { GlassCard } from './GlassCard';
 import { NeonButton } from './NeonButton';
 import { Ionicons } from '@expo/vector-icons';
@@ -67,6 +67,7 @@ export function AddAssetModal({ visible, onClose, onSave, initialAsset }: AddAss
       return;
     }
 
+    Keyboard.dismiss();
     onSave({
       ...(initialAsset?.id ? { id: initialAsset.id } : {}),
       name,
@@ -98,7 +99,7 @@ export function AddAssetModal({ visible, onClose, onSave, initialAsset }: AddAss
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior="padding"
         className="flex-1"
       >
         <Animated.View 
@@ -106,7 +107,7 @@ export function AddAssetModal({ visible, onClose, onSave, initialAsset }: AddAss
             className="flex-1 justify-center items-center bg-black/60 p-4"
         >
             <Animated.View 
-                entering={SlideInDown.springify().damping(15)}
+                entering={SlideInDown.duration(400)}
                 className="w-full max-w-lg"
             >
                 <GlassCard className="border-neon-cyan/20" intensity={80}>
@@ -125,7 +126,11 @@ export function AddAssetModal({ visible, onClose, onSave, initialAsset }: AddAss
                             </TouchableOpacity>
                         </View>
                         
-                        <ScrollView showsVerticalScrollIndicator={false} className="max-h-[60vh]">
+                        <ScrollView 
+                            showsVerticalScrollIndicator={false} 
+                            className="max-h-[60vh]"
+                            contentContainerStyle={{ paddingBottom: 20 }}
+                        >
                             <Text className="text-gray-400 mb-2 font-bold text-xs uppercase ml-1">Información General</Text>
                             <TextInput 
                                 className="bg-black/20 text-white p-4 rounded-xl mb-4 border border-white/10 focus:border-neon-cyan/50 font-medium"

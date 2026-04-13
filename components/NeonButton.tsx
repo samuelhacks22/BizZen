@@ -7,33 +7,31 @@ import * as Haptics from 'expo-haptics';
 
 // Propiedades del Botón Neón
 interface NeonButtonProps extends TouchableOpacityProps {
-  title?: string; // Texto del botón
-  icon?: keyof typeof Ionicons.glyphMap; // Nombre del icono (opcional)
-  variant?: 'primary' | 'secondary' | 'danger'; // Variante de color
+  title?: string;
+  icon?: keyof typeof Ionicons.glyphMap;
+  variant?: 'primary' | 'secondary' | 'danger';
+  color?: string;
 }
 
 // Componente de Botón con estilo Neón y degradado
-export function NeonButton({ title, icon, variant = 'primary', className, ...props }: NeonButtonProps) {
-  const scale = useSharedValue(1); // Valor de escala para animación
+export function NeonButton({ title, icon, variant = 'primary', color, className, ...props }: NeonButtonProps) {
+  const scale = useSharedValue(1);
   
-  // Obtener colores del degradado según la variante
   const getGradientColors = (): readonly [string, string, ...string[]] => {
+    if (color) return [color, color + 'cc']; // Usar color base y una versión con opacidad para el degradado
     switch (variant) {
-      case 'primary': return ['#22d3ee', '#3b82f6']; // Cian a Azul
-      case 'secondary': return ['#a855f7', '#d946ef']; // Púrpura a Rosa
-      case 'danger': return ['#f43f5e', '#ef4444']; // Rosa a Rojo
+      case 'primary': return ['#22d3ee', '#3b82f6'];
+      case 'secondary': return ['#a855f7', '#d946ef'];
+      case 'danger': return ['#f43f5e', '#ef4444'];
       default: return ['#22d3ee', '#3b82f6'];
     }
   };
 
-  // Obtener color de sombra según la variante
-  const getShadowColor = () => {
-      switch (variant) {
-        case 'primary': return 'shadow-cyan-500/50';
-        case 'secondary': return 'shadow-purple-500/50';
-        case 'danger': return 'shadow-red-500/50';
-      }
-  };
+  const shadowClass = color ? '' : (
+      variant === 'primary' ? 'shadow-cyan-500/50' : 
+      variant === 'secondary' ? 'shadow-purple-500/50' : 
+      'shadow-red-500/50'
+  );
 
   // Estilo animado para efecto de pulsación
   const animatedStyle = useAnimatedStyle(() => ({
@@ -49,8 +47,9 @@ export function NeonButton({ title, icon, variant = 'primary', className, ...pro
   return (
     <Pressable 
         onPressIn={handlePressIn}
-        onPressOut={() => scale.value = withSpring(1)} // Restaurar escala
-        className={`shadow-lg ${getShadowColor()} ${className}`}
+        onPressOut={() => scale.value = withSpring(1)}
+        className={`shadow-lg ${shadowClass} ${className}`}
+        style={color ? { shadowColor: color, shadowOpacity: 0.5, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } } : {}}
         {...(props as any)}
     >
       <Animated.View style={animatedStyle}>

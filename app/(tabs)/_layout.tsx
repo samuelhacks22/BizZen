@@ -1,77 +1,85 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { View } from 'react-native';
+import { View, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { Ionicons } from '@expo/vector-icons';
+import { TabIcon } from '../../components/TabIcon';
 
-// Diseño de la navegación por pestañas (TabLayout)
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: false, // Ocultar la cabecera predeterminada
-        // Estilos personalizados para la barra de pestañas flotante
+        headerShown: false,
         tabBarStyle: {
-          position: 'absolute', // Posición absoluta para flotar
-          bottom: 24, // Margen inferior
-          left: 24, // Margen izquierdo
-          right: 24, // Margen derecho
-          borderRadius: 24, // Bordes redondeados
-          height: 64, // Altura de la barra
-          backgroundColor: 'transparent', // Fondo transparente (usamos BlurView)
-          elevation: 0, // Sin elevación predeterminada de Android
-          borderTopWidth: 0, // Sin borde superior
-          shadowColor: '#000', // Sombra personalizada
-          shadowOffset: { width: 0, height: 10 },
-          shadowOpacity: 0.5,
+          position: 'absolute',
+          bottom: Platform.OS === 'ios' ? 40 : 25,
+          left: 16,
+          right: 16,
+          borderRadius: 35,
+          height: 75,
+          backgroundColor: 'transparent',
+          elevation: 0,
+          borderTopWidth: 0,
+          borderWidth: 1.5,
+          borderColor: 'rgba(255,255,255,0.08)',
+          shadowColor: '#22d3ee',
+          shadowOffset: { width: 0, height: 12 },
+          shadowOpacity: 0.4,
           shadowRadius: 20,
+          paddingBottom: 0,
         },
-        // Fondo de la barra de pestañas usando BlurView (efecto de desenfoque)
         tabBarBackground: () => (
-          <BlurView 
-            intensity={60} // Intensidad del desenfoque
-            tint="dark" // Tinte oscuro
-            style={{ 
-              borderRadius: 24, 
-              overflow: 'hidden', 
-              flex: 1,
-              backgroundColor: 'rgba(0,0,0,0.6)', // Fondo semitransparente oscuro
-              borderWidth: 1,
-              borderColor: 'rgba(255,255,255,0.05)', // Borde sutil
-            }} 
-          />
+          <View style={{ flex: 1, borderRadius: 35, overflow: 'hidden' }}>
+            <BlurView 
+                intensity={95} 
+                tint="dark" 
+                style={{ flex: 1 }} 
+            />
+            <View className="absolute inset-0 bg-slate-900/60" />
+          </View>
         ),
-        tabBarActiveTintColor: '#22d3ee', // Color del icono activo (Cyan-400)
-        tabBarInactiveTintColor: '#9ca3af', // Color del icono inactivo (Gray-400)
-        tabBarShowLabel: false, // Ocultar etiquetas de texto
+        tabBarActiveTintColor: '#22d3ee',
+        tabBarInactiveTintColor: '#94a3b8',
+        tabBarShowLabel: false,
       }}
     >
-      {/* Pestaña: Panel de Control (Dashboard) */}
       <Tabs.Screen
         name="index"
         options={{
-          tabBarIcon: ({ color, size }) => <Ionicons name="stats-chart" size={size} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="grid-outline" color={color} focused={focused} />
+          ),
         }}
       />
-      {/* Pestaña: Inventario */}
       <Tabs.Screen
         name="inventory"
         options={{
-          tabBarIcon: ({ color, size }) => <Ionicons name="cube" size={size} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="cube-outline" color={color} focused={focused} />
+          ),
         }}
       />
-      {/* Pestaña: Reportes */}
+      <Tabs.Screen
+        name="employees"
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="people-outline" color={color} focused={focused} activeColor="#a855f7" />
+          ),
+        }}
+      />
       <Tabs.Screen
         name="reports"
         options={{
-          tabBarIcon: ({ color, size }) => <Ionicons name="document-text" size={size} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="analytics-outline" color={color} focused={focused} />
+          ),
         }}
       />
-      {/* Pestaña: Perfil */}
       <Tabs.Screen
         name="profile"
         options={{
-          tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="person-outline" color={color} focused={focused} />
+          ),
         }}
       />
     </Tabs>

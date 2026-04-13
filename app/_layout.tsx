@@ -1,7 +1,7 @@
 import "../global.css"; // Importar estilos globales
 import React, { useEffect, Suspense } from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import { Slot, Stack } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,10 +11,34 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { migrateDbIfNeeded } from '../db/database';
 
 import { TycoonProvider } from '../context/TycoonContext';
-import { AuthProvider } from '../context/AuthContext';
+import { AuthProvider, useAuth } from '../context/AuthContext';
 
 // Prevenir que la pantalla de carga (splash screen) se oculte automáticamente
 SplashScreen.preventAutoHideAsync();
+
+// Componente para manejar la lógica de navegación protegida
+function NavigationGuard() {
+  const { user, isLoading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    // Determinar si el usuario está intentando acceder a las pestañas del juego
+    const inTabsGroup = segments[0] === '(tabs)';
+
+    if (!user && inTabsGroup) {
+      // Si no hay usuario y está en las pestañas, redirigir al login
+      router.replace('/login');
+    } else if (user && !inTabsGroup) {
+      // Si hay usuario y NO está en las pestañas (está en login/index), redirigir al juego
+      router.replace('/(tabs)');
+    }
+  }, [user, isLoading, segments]);
+
+  return <Stack screenOptions={{ headerShown: false }} />;
+}
 
 // Componente de diseño raíz (RootLayout)
 export default function RootLayout() {
@@ -51,8 +75,8 @@ export default function RootLayout() {
           <AuthProvider>
             {/* Proveedor del contexto Tycoon (lógica del juego) */}
             <TycoonProvider>
-              {/* Navegación por Stack (pila) sin cabeceras predeterminadas */}
-              <Stack screenOptions={{ headerShown: false }} />
+              {/* Guardia de Navegación centralizado */}
+              <NavigationGuard />
               {/* Barra de estado con estilo claro (texto blanco) */}
               <StatusBar style="light" />
             </TycoonProvider>
